@@ -41,6 +41,12 @@ class PickleFormatter(object):
     def _get_train_test_(self):
         self.train_X, self.test_X, self.train_Y, self.test_Y = train_test_split(self.slices, self.labels, test_size = self.test_size)
 
+    def save_pickle(self, filename):
+        train = [self.train_X, self.train_Y]
+        test = [self.test_X, self.test_Y]
+        doc = (train, test)
+        with open(filename, 'wb') as f:
+            pickle.dump(doc, f)
 
 if __name__ == '__main__':
     pickles = PickleFormatter()
