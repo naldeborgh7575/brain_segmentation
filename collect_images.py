@@ -1,5 +1,4 @@
 import numpy as np
-import simpleitk
 import skimage.io as io
 from sklearn.cross_validation import train_test_split
 from GetFiles import GetFiles
@@ -13,8 +12,8 @@ class PickleFormatter(object):
     def __init__(self, sequence = 't2', test_size = 0.2):
         self.sequence = sequence.lower()
         self.test_size = test_size
-        self.slices = _get_slices_labels_()[0] # all scan images
-        self.labels = _get_slices_labels_()[1] # all ground truth images
+        self.slices = self._get_slices_labels_()[0] # all scan images
+        self.labels = self._get_slices_labels_()[1] # all ground truth images
         self.train_X = None
         self.test_X = None
         self.train_Y = None
@@ -27,7 +26,7 @@ class PickleFormatter(object):
         '''
         slices, labels = [], []
         scan_loc_lst = GetFiles(self.sequence).path_list() # list of paths to each scan
-        ground_truth = GetFiles('gt').path_list() # paths to corresponding ground truths
+        ground_truth = GetFiles(sequence = 'gt').path_list() # paths to corresponding ground truths
 
         for path_idx in xrange(len(scan_loc_lst)): # loop through paths, read scans
             scan = io.imread(scan_loc_lst[path_idx], plugin='simpleitk')
@@ -41,3 +40,7 @@ class PickleFormatter(object):
 
     def _get_train_test_(self):
         self.train_X, self.test_X, self.train_Y, self.test_Y = train_test_split(self.slices, self.labels, test_size = self.test_size)
+
+
+if __name__ == '__main__':
+    pickles = PickleFormatter()
