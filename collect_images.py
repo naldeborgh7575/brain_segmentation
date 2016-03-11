@@ -6,26 +6,24 @@ from GetFiles import GetFiles
 
 class PickleFormatter(object):
     '''
-    INPUT: all slices from a specific pulse sequence, ground truth (labels)
-    Creates a tuple of three lists: training set, validation set, testing set
+    INPUT: MR pulse sequence as a string (default to t2), test size (default to 0.2)
+    Creates a tuple of two lists: training set, testing set from BraTS dataset
     Each list is a pair: list of scan slices, list of ground truth slices
     '''
-    def __init__(self, sequence = 't2', test_prop = 0.2):
+    def __init__(self, sequence = 't2', test_size = 0.2):
         self.sequence = sequence.lower()
-        self.test_prop = test_prop
+        self.test_size = test_size
         self.slices = _get_slices_labels_()[0] # all scan images
         self.labels = _get_slices_labels_()[1] # all ground truth images
         self.train_X = None
         self.test_X = None
         self.train_Y = None
         self.test_Y = None
-
+        self._get_train_test_()
 
     def _get_slices_labels_(self):
         '''
-        IMPUT: MR pulse sequence as a string (t1, t1c, t2, flair)
-        OUTPUT: None.
-        Writes scans acquired with input sequence into Pickle format
+        Creates slices and labels lists
         '''
         slices, labels = [], []
         scan_loc_lst = GetFiles(self.sequence).path_list() # list of paths to each scan
@@ -41,4 +39,5 @@ class PickleFormatter(object):
 
         return slices, labels
 
-    def get_train_test(self):
+    def _get_train_test_(self):
+        self.train_X, self.test_X, self.train_Y, self.test_Y = train_test_split(self.slices, self.labels, test_size = self.test_size)
