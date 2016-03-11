@@ -25,7 +25,7 @@ class GetFiles(object):
         elif self.sequence == 'all':
             return self._get_all_()
         else:
-            return 'please initialize with a valid sequence or "all"'
+            return 'please initialize with a valid sequence, ground truth ("gt"), or "all"'
 
     def _get_gt_(self):
         gr = self.grade
