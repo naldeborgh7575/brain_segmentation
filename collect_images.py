@@ -1,6 +1,7 @@
 import numpy as np
 import h5py
-import skimage.io as io
+import matplotlib.pyplot as plt
+from skimage import io, transform
 from sklearn.cross_validation import train_test_split
 from GetFiles import GetFiles
 
@@ -45,6 +46,13 @@ class GetSlices(object):
     def _get_train_test_(self):
         self.train_X, self.test_X, self.train_Y, self.test_Y = train_test_split(self.slices, self.labels, test_size = self.test_size)
 
+    def transform(self, func, params, scan=None, slice=None):
+        if scan and slice:
+            img = self.slices[scan][slice]
+            new_img = func(img, **params).astype(float)
+            io.imshow(new_img)
+            plt.show
+
     def save_h5f(self, filename):
         h5f = h5py.File(filename, 'w')
         h5f.create_dataset('X_train', data = self.train_X)
@@ -61,8 +69,8 @@ def load_data(filename):
     h5f = h5py.File(filename, 'r')
     X_train = h5f['X_train'][:]
     X_test = h5f['X_test'][:]
-    Y_train = (h5f['Y_train'][:]
-    Y_test = h5f['Y_test'][:])
+    Y_train = h5f['Y_train'][:]
+    Y_test = h5f['Y_test'][:]
     h5f.close()
     return X_train, X_test, Y_train, Y_test
 
