@@ -28,7 +28,7 @@ class GetSlices(object):
         Creates slices and labels lists
         '''
         slices, labels = [], []
-        scan_loc_lst = GetFiles(self.sequence).path_list() # list of paths to each scan
+        scan_loc_lst = GetFiles(self.sequence, limit = self.limit).path_list() # list of paths to each scan
         ground_truth = GetFiles(sequence = 'gt').path_list() # paths to corresponding ground truths
 
         for path_idx in xrange(len(scan_loc_lst)): # loop through paths, read scans
