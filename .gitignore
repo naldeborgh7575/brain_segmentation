@@ -1,3 +1,4 @@
 Testing/
 Training/
 *.pyc
+*.h5
