@@ -7,21 +7,24 @@ class GetFiles(object):
     defaults to t2 and both, respectively
     OUTPUT: all BRATS data for given sequence
     '''
-    def __init__(self, sequence = 't2', grade = 'both'):
+    def __init__(self, sequence = 't2', grade = 'both', limit = None):
         self.sequence = sequence.lower()
         self.grade = grade
+        self.limit = limit
 
     def path_list(self):
+        if not self.limit:
+            self.limit = len(self._get_t2_())
         if self.sequence == 't2':
-            return self._get_t2_()
+            return self._get_t2_()[:self.limit]
         elif self.sequence == 't1':
-            return self._get_t1_()
+            return self._get_t1_()[:self.limit]
         elif self.sequence == 't1c':
-            return self._get_t1c_()
+            return self._get_t1c_()[:self.limit]
         elif self.sequence == 'flair':
-            return self._get_flair_()
+            return self._get_flair_()[:self.limit]
         elif self.sequence == 'gt':
-            return self._get_gt_()
+            return self._get_gt_()[:self.limit]
         elif self.sequence == 'all':
             return self._get_all_()
         else:
