@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
-from skimage import io, transform
+from skimage import io
 from sklearn.cross_validation import train_test_split
 from GetFiles import GetFiles
 
@@ -30,7 +30,7 @@ class GetSlices(object):
         '''
         slices, labels = [], []
         scan_loc_lst = GetFiles(self.sequence, limit = self.limit).path_list() # list of paths to each scan
-        ground_truth = GetFiles(sequence = 'gt').path_list() # paths to corresponding ground truths
+        ground_truth = GetFiles(sequence = 'gt', limit = self.limit).path_list() # paths to corresponding ground truths
 
         for path_idx in xrange(len(scan_loc_lst)): # loop through paths, read scans
             scan = io.imread(scan_loc_lst[path_idx], plugin='simpleitk')
@@ -74,8 +74,30 @@ def load_data(filename):
     h5f.close()
     return X_train, X_test, Y_train, Y_test
 
+def normalize_slices(slices):
+    '''
+    INPUT: list of MR slices
+    OUTPUT: normalized list of slices
+    removes highest and lowest 1 percent of intensities
+    subtracts mean and divides by standard deviation of each slice
+    '''
+    reg_slices = []
+    for slice in slices:
+        if np.std(slice) == 0:
+            pass
+        ints = slice.ndarray.flatten()
+        bot_one, top_one = np.percentile(ints, (1,99))
+        for pixel in xrange(len(ints)):
+            if ints[pixel] > top_one:
+                ints[pixel] = top_one
+            elif ints[pixel] < bot_one:
+                ints[pixel] = bot_one
+        ints = (ints - np.mean(ints)) / np.std(ints)
+        reg_slices.append(ints.reshape(slice.shape[0], slice.shape[1]))
+    return np.array(reg_slices)
+
 if __name__ == '__main__':
-    slices = GetSlices()
+    slices = GetSlices(limit = 2)
 
 
     ## GRAVEYARD ##
