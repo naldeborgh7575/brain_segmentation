@@ -1,6 +1,6 @@
 from glob import glob
-from scipy.misc import imsave
 from skimage import io
+from scipy.misc import imsave
 
 class GetFiles(object):
     '''
@@ -73,6 +73,24 @@ class GetFiles(object):
             return self._get_all_()
         else:
             return 'please initialize with a valid sequence, ground truth ("gt"), or "all"'
+
+
+def to_png(paths):
+    '''
+    INPUT: list of file paths leading to MR images
+    Creates png version of MR scans for each slice.
+    Saves png to file path where original scan is found
+    '''
+    for path in paths:
+        scan = io.imread(path, plugin='simpleitk')
+        # loop thru slices, save as png in respective file path
+        for slice_ix in xrange(len(scan)):
+            imsave(path + str(slice_ix) + '.png', scan[slice_ix])
+
+if __name__ == '__main__':
+    paths = GetFiles(sequence = 'all').path_list()
+    # to_png(paths) ## don't run this again!
+
 
 ## GRAVEYARD ##
 
