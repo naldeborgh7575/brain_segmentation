@@ -1,4 +1,6 @@
 from glob import glob
+from scipy.misc import imsave
+from skimage import io
 
 class GetFiles(object):
     '''
@@ -7,7 +9,7 @@ class GetFiles(object):
     defaults to t2 and both, respectively
     OUTPUT: all BRATS data for given sequence
     '''
-    def __init__(self, sequence = 't2', grade = 'both', limit = None):
+    def __init__(self, sequence = 'all', grade = 'both', limit = None):
         self.sequence = sequence.lower()
         self.grade = grade
         self.limit = limit
@@ -53,7 +55,7 @@ class GetFiles(object):
         if self.grade == 'both':
             gr = '**'
         return glob(dir + gr + '/**/**/*.mha')
-        
+
     def path_list(self):
         if not self.limit:
             self.limit = len(self._get_t2_())
@@ -71,3 +73,31 @@ class GetFiles(object):
             return self._get_all_()
         else:
             return 'please initialize with a valid sequence, ground truth ("gt"), or "all"'
+
+## GRAVEYARD ##
+
+# def save_png(sequence = 'all'):
+#     paths = GetFiles(sequence).path_list() # list of all paths to scans
+#     seqs = flair, t1, t1c, t2, gt = [],[],[],[],[] # lists of paths by pulse sequence
+#     seqs_str = ['flair', 't1', 't1c', 't2', 'gt']
+#     for scan_idx in xrange(len(paths)):
+#         if scan_idx % 5 == 0:
+#             flair.append(paths[scan_idx])
+#         elif (scan_idx - 1) % 5 == 0:
+#             t1.append(paths[scan_idx])
+#         elif (scan_idx - 2) % 5 == 0:
+#             t1c.append(paths[scan_idx])
+#         elif (scan_idx - 3) % 5 == 0:
+#             t2.append(paths[scan_idx])
+#         else:
+#             gt.append(scan_idx)
+#     for sequence_idx in xrange(5): # index of sequence in seq list
+#         for scan_idx in xrange(len(seqs[sequence_idx])): #index of scan file in sequence list
+#             scan = io.imread(seqs[sequence_idx][scan_idx], plugin='simpleitk') # read scan file
+#             for slice_idx in xrange(len(scan)): # index of slice(image) within scan
+#                 imsave(seqs_str[sequence_idx] + str(scan_idx) + str(slice_idx) + '.png', scan[slice_idx])
+
+    # for scan_idx in xrange(len(paths)):
+    #     scan = io.imread(scan_idx, plugin='simpleitk')
+    #     for slice_idx in xrange(len(scan)):
+    #         imsave()
