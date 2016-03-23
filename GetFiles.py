@@ -1,3 +1,5 @@
+import os
+import numpy as np
 from glob import glob
 from skimage import io
 from scipy.misc import imsave
@@ -87,10 +89,25 @@ def to_png(paths):
         for slice_ix in xrange(len(scan)):
             imsave(path + str(slice_ix) + '.png', scan[slice_ix])
 
+def reshape_scans(patient_paths):
+    '''
+    INPUT: filepath for each patient
+    OUTPUT: each scan as vertically stacked image of channels + ground truth
+    '''
+    for patient in xrange(len(patient_paths)):
+        for slice in xrange(155):
+            # get each channel for individual slices
+            modalities = glob(patient_paths[patient] + '/**/*mha{}.png'.format(slice))
+            channels = np.array([io.imread(mode) for mode in modalities])
+            # reshape 5 channels into vertical strip of channels
+            channels = channels.reshape(channels.shape[0] * channels.shape[1], channels.shape[2])
+            io.imsave('Training_PNG/{}_'.format(patient)+str(slice)+'.png', channels)
+
 if __name__ == '__main__':
     paths = GetFiles(sequence = 'all').path_list()
+    patient_paths = glob('Training/*GG/**/')
     # to_png(paths) ## don't run this again!
-
+    # reshape_scans(patient_paths) Don't rerun this either!
 
 ## GRAVEYARD ##
 
