@@ -1,5 +1,7 @@
 Testing/
 Training/
+Training_PNG/
 Papers/
+mha_to_png.py
 *.pyc
 *.h5
