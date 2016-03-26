@@ -103,36 +103,39 @@ def reshape_scans(patient_paths):
             channels = channels.reshape(channels.shape[0] * channels.shape[1], channels.shape[2])
             io.imsave('Training_PNG/{}_'.format(patient)+str(slice)+'.png', channels)
 
+def normalize_scans(files):
+    '''
+    INPUT: list of png files to normalize
+    subtract mean and divde by standard deviation for each slice.
+    save normalized images to directory Normed_PNG/
+    '''
+    for img in files: # strip of images
+        slices = io.imread(img).astype(float)
+        slices = slices.reshape(5, 240,240)
+        for mode in xrange(4):
+            normed = normalize_slice(slices[mode])
+            slices[mode] = normed
+        slice = slices.reshape((5 * 240), 240)
+        imsave('Normed_png/' + img[13:-4] + '_n.png', slice)
+
+def normalize_slice(slice):
+    '''
+    INPUT: a single slice in a single modality
+    subtracts the mean, divides by standard deviation
+    removes top and bottom 1 percent intensities
+    '''
+    l, h = np.percentile(slice, (1,99))
+    slice = np.clip(slice, l, h)
+    if np.std(slice) == 0:
+        return slice
+    else:
+
+        return (slice - np.mean(slice)) / np.std(slice)
+
 if __name__ == '__main__':
     paths = GetFiles(sequence = 'all').path_list()
     patient_paths = glob('Training/*GG/**/')
+    files = glob('Training_PNG/*.png')
     # to_png(paths) ## don't run this again!
     # reshape_scans(patient_paths) Don't rerun this either!
-
-## GRAVEYARD ##
-
-# def save_png(sequence = 'all'):
-#     paths = GetFiles(sequence).path_list() # list of all paths to scans
-#     seqs = flair, t1, t1c, t2, gt = [],[],[],[],[] # lists of paths by pulse sequence
-#     seqs_str = ['flair', 't1', 't1c', 't2', 'gt']
-#     for scan_idx in xrange(len(paths)):
-#         if scan_idx % 5 == 0:
-#             flair.append(paths[scan_idx])
-#         elif (scan_idx - 1) % 5 == 0:
-#             t1.append(paths[scan_idx])
-#         elif (scan_idx - 2) % 5 == 0:
-#             t1c.append(paths[scan_idx])
-#         elif (scan_idx - 3) % 5 == 0:
-#             t2.append(paths[scan_idx])
-#         else:
-#             gt.append(scan_idx)
-#     for sequence_idx in xrange(5): # index of sequence in seq list
-#         for scan_idx in xrange(len(seqs[sequence_idx])): #index of scan file in sequence list
-#             scan = io.imread(seqs[sequence_idx][scan_idx], plugin='simpleitk') # read scan file
-#             for slice_idx in xrange(len(scan)): # index of slice(image) within scan
-#                 imsave(seqs_str[sequence_idx] + str(scan_idx) + str(slice_idx) + '.png', scan[slice_idx])
-
-    # for scan_idx in xrange(len(paths)):
-    #     scan = io.imread(scan_idx, plugin='simpleitk')
-    #     for slice_idx in xrange(len(scan)):
-    #         imsave()
+    # normalize_scans(files) # don't run again
