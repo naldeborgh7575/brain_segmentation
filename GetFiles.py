@@ -129,7 +129,6 @@ def normalize_slice(slice):
     if np.std(slice) == 0:
         return slice
     else:
-
         return (slice - np.mean(slice)) / np.std(slice)
 
 if __name__ == '__main__':
