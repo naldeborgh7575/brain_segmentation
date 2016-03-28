@@ -1,6 +1,9 @@
 import numpy as np
+np.random.seed(5) # for reproducibility
+import random
 from glob import glob
 from skimage import io
+from sklearn.feature_extraction.image import extract_patches_2d
 
 class BrainPipeline(object):
     '''
@@ -12,16 +15,17 @@ class BrainPipeline(object):
         self.path = path
         self.modes = ['flair', 't1', 't1c', 't2', 'gt']
         # slices=[[flair x 155], [t1], [t1c], [t2], [gt]], 155 per modality
-        self.slices_by_mode = self.read_scans()[0]
+        self.slices_by_mode, n = self.read_scans()
         # [ [slice1 x 5], [slice2 x 5], ..., [slice155 x 5]]
-        self.slices_by_slice = self.read_scans()[1]
-        self.normed_slices = np.zeros((155, 5, 240, 240))
+        self.slices_by_slice = n
+        self.normed_slices = self.norm_slices()
 
     def read_scans(self):
         '''
         goes into each modality in patient directory and loads individual scans. transforms scans of same slice into strip of 5 images
         '''
         # import pdb; pdb.set_trace()
+        print 'Loading scans...'
         slices_by_mode = np.zeros((5, 155, 240, 240))
         slices_by_slice = np.zeros((155, 5, 240, 240))
         scans = glob(self.path + '**/*.mha') # directories to each image (5 total)
@@ -39,10 +43,14 @@ class BrainPipeline(object):
         subtracts mean and div by std dev for each slice
         clips top and bottom one percent of pixel intensities
         '''
+        print 'Normalizing slices...'
+        normed_slices = np.zeros((155, 5, 240, 240))
         for slice_ix in xrange(155):
-            self.normed_slices[slice_ix][-1] = self.slices_by_slice[slice_ix][-1]
+            normed_slices[slice_ix][-1] = self.slices_by_slice[slice_ix][-1]
             for mode_ix in xrange(4):
-                self.normed_slices[slice_ix][mode_ix] =  self._normalize(self.slices_by_slice[slice_ix][mode_ix])
+                normed_slices[slice_ix][mode_ix] =  self._normalize(self.slices_by_slice[slice_ix][mode_ix])
+        print 'Done.'
+        return normed_slices
 
     def _normalize(self, slice):
         '''
@@ -56,5 +64,20 @@ class BrainPipeline(object):
         else:
             return (slice - np.mean(slice)) / np.std(slice)
 
-    def save(self, keyword):
-        pass
+    def generate_patches(self, patch_size=(33,33), num_patches = 50):
+        '''
+        INPUT:  (1) tuple 'patch_size': dimensions of patches to be used in net
+                (2) int 'num_patches': number of patches to be generated per slice.
+        OUTPUT: (1) list of scan patches: (num_slices * num_patches, num_channels, patch_h, patch_w)
+                (2) list of label patches: (num_slices * num_patches, patch_h, patch_w)
+        '''
+        self.patches = [] # (num_scans, num_patches, 4 modes, patch_h, patch_w)
+        self.patch_labels = [] # (num_scans, num_patches, patch_h, patch_w)
+        patch_list = [] # list of lists: patches for each slice (same idxs)
+        for slice_strip in self.normed_slices: # slice = strip of 5 images
+            slices = slice_strip.reshape(5,240,240)
+            for img in slices:
+                # get list of patches corresponding to each image in slices
+                patch_list.append(extract_patches_2d(img, patch_size, max_patches = num_patches, random_state=5)) #set rs for same patch ix among modes
+            self.patches.append(zip(patch_list[0], patch_list[1], patch_list[2], patch_list[3]))
+            self.patch_labels.append(patch_list[-1])
