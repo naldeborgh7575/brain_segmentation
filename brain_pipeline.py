@@ -28,7 +28,7 @@ class BrainPipeline(object):
         print 'Loading scans...'
         slices_by_mode = np.zeros((5, 155, 240, 240))
         slices_by_slice = np.zeros((155, 5, 240, 240))
-        scans = glob(self.path + '**/*.mha') # directories to each image (5 total)
+        scans = glob(self.path + '/**/*.mha') # directories to each image (5 total)
         for scan_idx in xrange(len(scans)):
             # read each image directory, save to self.slices
             slices_by_mode[scan_idx] = io.imread(scans[scan_idx], plugin='simpleitk').astype(float)
@@ -54,17 +54,18 @@ class BrainPipeline(object):
 
     def _normalize(self, slice):
         '''
-        INPUT: a single slice of any given modality (excluding gt)
+        INPUT:  (1) a single slice of any given modality (excluding gt)
+                (2) index of modality assoc with slice (0=flair, 1=t1, 2=t1c, 3=t2)
         OUTPUT: normalized slice
         '''
-        b, t = np.percentile(slice, (1,99))
+        b, t = np.percentile(slice, (0.5,99.5))
         slice = np.clip(slice, b, t)
         if np.std(slice) == 0:
             return slice
         else:
             return (slice - np.mean(slice)) / np.std(slice)
 
-    def generate_patches(self, patch_size=(33,33), num_patches = 50):
+    def generate_patches(self, patch_size=(65,65), num_patches = 50):
         '''
         INPUT:  (1) tuple 'patch_size': dimensions of patches to be used in net
                 (2) int 'num_patches': number of patches to be generated per slice.
@@ -81,3 +82,39 @@ class BrainPipeline(object):
                 patch_list.append(extract_patches_2d(img, patch_size, max_patches = num_patches, random_state=5)) #set rs for same patch ix among modes
             self.patches.append(zip(patch_list[0], patch_list[1], patch_list[2], patch_list[3]))
             self.patch_labels.append(patch_list[-1])
+
+    def save_patient(self, patient_num):
+        '''
+        INPUT: int 'patient_num': unique identifier for each patient
+        OUTPUT: saves png in Norm_PNG directory
+        '''
+        print 'Saving scans for patient {}...'.format(patient_num)
+        for slice_ix in xrange(155):
+            strip = self.slices_by_slice[slice_ix].reshape(1200, 240)
+            if np.max(strip) != 0:
+                strip /= np.max(strip)
+            io.imsave('Training_PNG/{}_{}.png'.format(patient_num, slice_ix), strip)
+
+    def save_norm_patient(self, patient_num):
+        '''
+        INPUT: int 'patient_num': unique identifier for each patient
+        OUTPUT: saves png in Norm_PNG directory
+        '''
+        print 'Saving scans for patient {}...'.format(patient_num)
+        for slice_ix in xrange(155):
+            strip = self.normed_slices[slice_ix].reshape(1200, 240)
+            if np.max(strip) != 0:
+                strip /= np.max(strip)
+            if np.min(strip) <= -1:
+                strip /= abs(np.min(strip))
+            io.imsave('Norm_PNG/{}_{}.png'.format(patient_num, slice_ix), strip)
+
+if __name__ == '__main__':
+    patients = glob('Training/HGG/**')
+    for patient_num, path in enumerate(patients):
+        a = BrainPipeline(path)
+        a.save_norm_patient(patient_num)
+        # a.save_patient(patient_num)
+    # TO DO
+    # resize images?
+    # make generator to train net in batches (~32)
