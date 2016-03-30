@@ -109,6 +109,15 @@ class BrainPipeline(object):
                 strip /= abs(np.min(strip))
             io.imsave('Norm_PNG/{}_{}.png'.format(patient_num, slice_ix), strip)
 
+    def n4itk_norm(self, path, n_dims=3, n_iters=[20,20,10,5]):
+        '''
+        INPUT:  (1) filepath 'path': path to mha T1 or T1c file
+                (2) directory 'parent_dir': parent directory to mha file
+        OUTPUT: writes n4itk normalized image to parent_dir under orig_filename_n.mha
+        '''
+        output_fn = path[:-4] + '_n.mha'
+        run n4_bias_correction.py path n_dim n_iters output_fn
+
 if __name__ == '__main__':
     patients = glob('Training/HGG/**')
     for patient_num, path in enumerate(patients):
