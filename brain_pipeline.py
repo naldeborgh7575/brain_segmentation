@@ -9,12 +9,15 @@ from sklearn.feature_extraction.image import extract_patches_2d
 class BrainPipeline(object):
     '''
     A class for processing brain scans for each patient
-    INPUT: path to directory of one patient. Contains mha following mha files:
-    flair, t1, t1c, t2, ground truth (gt)
+    INPUT:  (1) filepath 'path': path to directory of one patient. Contains following mha files:
+            flair, t1, t1c, t2, ground truth (gt)
+            (2) bool 'n4itk': True to use n4itk normed t1 scans (defaults to True)
+            (3) bool 'n4itk_apply': True to apply and save n4itk filter to t1 and t1c scans for given patient. This will only work if the
     '''
-    def __init__(self, path, n4itk = False):
+    def __init__(self, path, n4itk = True, n4itk_apply = False):
         self.path = path
         self.n4itk = n4itk
+        self.n4itk_apply = n4itk_apply
         self.modes = ['flair', 't1', 't1c', 't2', 'gt']
         # slices=[[flair x 155], [t1], [t1c], [t2], [gt]], 155 per modality
         self.slices_by_mode, n = self.read_scans()
@@ -28,15 +31,22 @@ class BrainPipeline(object):
         goes into each modality in patient directory and loads individual scans.
         transforms scans of same slice into strip of 5 images
         '''
-        # import pdb; pdb.set_trace()
         print 'Loading scans...'
         slices_by_mode = np.zeros((5, 155, 240, 240))
         slices_by_slice = np.zeros((155, 5, 240, 240))
         scans = glob(self.path + '/**/*.mha') # directories to each image (5 total)
-        if self.n4itk:
-            n4_scans = glob(self.path + '**/*T1*.mha')
-            scans[1:3] = n4_scans
-        for scan_idx in xrange(len(scans)):
+        if self.n4itk_apply:
+            print '-> Applyling bias correction...'
+            t1_scans = glob(self.path + '/**/*T1*.mha') # t1 scans to norm
+            for t1_path in t1_scans:
+                self.n4itk_norm(t1_path) # normalize files
+                n4_scans = glob(self.path + '/*T1*/*_n.mha')
+            scans[1:3] = n4_scans # replace t1 with normed t1
+        elif self.n4itk:
+            n4_scans = glob(self.path + '/*T1*/*n_.mha')
+            scans[1:3] = n4_scans # replace t1 with normed t1
+        for scan_idx in xrange(4):
+            # import pdb; pdb.set_trace()
             # read each image directory, save to self.slices
             slices_by_mode[scan_idx] = io.imread(scans[scan_idx], plugin='simpleitk').astype(float)
         for mode_ix in xrange(slices_by_mode.shape[0]): # modes 1 thru 5
@@ -122,16 +132,19 @@ class BrainPipeline(object):
         '''
         output_fn = path[:-4] + '_n.mha'
         # run n4_bias_correction.py path n_dim n_iters output_fn
-        subprocess.call('python n4_bias_correction.py ' + path + ' ' + ' ' + str(n_dims) + ' ' + n_iters + ' ' + output_fn, shell = True)
+        subprocess.call('python n4_bias_correction.py ' + path + ' ' + str(n_dims) + ' ' + n_iters + ' ' + output_fn, shell = True)
 
 if __name__ == '__main__':
     patients = glob('Training/HGG/**')
-    t1s = glob('Training/HGG/**/*T1*/*.mha')
-    a = BrainPipeline(patients[0])
+    for patient in patients[13:50]:
+        a = BrainPipeline(patient, n4itk_apply = True)
+
+    # a = BrainPipeline(patients[0])
     # for patient_num, path in enumerate(patients):
     #     a = BrainPipeline(path)
         # a.save_patient('norm', patient_num)
         # a.save_patient('reg', patient_num)
+
 
     # TO DO
     # make generator to train net in batches (~32)
