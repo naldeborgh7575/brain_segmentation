@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from nipype.interfaces.ants import N4BiasFieldCorrection
 import sys
 import os
