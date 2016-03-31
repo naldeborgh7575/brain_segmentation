@@ -7,3 +7,4 @@ mha_to_png.py
 *.png
 *.pyc
 *.h5
+*.mha
