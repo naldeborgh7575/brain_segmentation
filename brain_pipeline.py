@@ -1,5 +1,4 @@
 import numpy as np
-np.random.seed(5) # for reproducibility
 import subprocess
 import random
 import progressbar
@@ -7,6 +6,7 @@ from glob import glob
 from skimage import io
 from sklearn.feature_extraction.image import extract_patches_2d
 
+np.random.seed(5) # for reproducibility
 progress = progressbar.ProgressBar(widgets=[progressbar.Bar('*', '[', ']'), progressbar.Percentage(), ' '])
 
 class BrainPipeline(object):
@@ -88,24 +88,6 @@ class BrainPipeline(object):
         else:
             return (slice - np.mean(slice)) / np.std(slice)
 
-    def generate_patches(self, patch_size=(65,65), num_patches = 50):
-        '''
-        INPUT:  (1) tuple 'patch_size': dimensions of patches to be used in net
-                (2) int 'num_patches': number of patches to be generated per slice.
-        OUTPUT: (1) list of scan patches: (num_slices * num_patches, num_channels, patch_h, patch_w)
-                (2) list of label patches: (num_slices * num_patches, patch_h, patch_w)
-        '''
-        self.patches = [] # (num_scans, num_patches, 4 modes, patch_h, patch_w)
-        self.patch_labels = [] # (num_scans, num_patches, patch_h, patch_w)
-        patch_list = [] # list of lists: patches for each slice (same idxs)
-        for slice_strip in self.normed_slices: # slice = strip of 5 images
-            slices = slice_strip.reshape(5,240,240)
-            for img in slices:
-                # get list of patches corresponding to each image in slices
-                patch_list.append(extract_patches_2d(img, patch_size, max_patches = num_patches, random_state=5)) #set rs for same patch ix among modes
-            self.patches.append(zip(patch_list[0], patch_list[1], patch_list[2], patch_list[3]))
-            self.patch_labels.append(patch_list[-1])
-
     def save_patient(self, reg_norm_n4, patient_num):
         '''
         INPUT:  (1) int 'patient_num': unique identifier for each patient
@@ -170,7 +152,7 @@ def s3_dump(directory, bucket):
 
 
 if __name__ == '__main__':
-    patients = glob('Training/HGG/**')[:3]
+    patients = glob('Training/HGG/**')
     # save_patient_slices(patients, 'reg')
     # save_patient_slices(patients, 'norm')
     save_patient_slices(patients, 'n4')
