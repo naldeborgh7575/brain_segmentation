@@ -2,13 +2,16 @@ import numpy as np
 np.random.seed(5) # for reproducibility
 import subprocess
 import random
+import progressbar
 from glob import glob
 from skimage import io
 from sklearn.feature_extraction.image import extract_patches_2d
 
+progress = progressbar.ProgressBar(widgets=[progressbar.Bar('*', '[', ']'), progressbar.Percentage(), ' '])
+
 class BrainPipeline(object):
     '''
-    A class for processing brain scans for each patient
+    A class for processing brain scans for one patient
     INPUT:  (1) filepath 'path': path to directory of one patient. Contains following mha files:
             flair, t1, t1c, t2, ground truth (gt)
             (2) bool 'n4itk': True to use n4itk normed t1 scans (defaults to True)
@@ -39,7 +42,7 @@ class BrainPipeline(object):
         t1s = glob(self.path + '/**/*T1*.mha')
         t1_n4 = glob(self.path + '/*T1*/*_n.mha')
         t1 = [scan for scan in t1s if scan not in t1_n4]
-        scans = [flair[0], t1s[0], t1[1], t2[0], gt[0]] # directories to each image (5 total)
+        scans = [flair[0], t1[0], t1[1], t2[0], gt[0]] # directories to each image (5 total)
         if self.n4itk_apply:
             print '-> Applyling bias correction...'
             for t1_path in t1:
@@ -110,8 +113,9 @@ class BrainPipeline(object):
         OUTPUT: saves png in Norm_PNG directory for normed, Training_PNG for reg
         '''
         print 'Saving scans for patient {}...'.format(patient_num)
+        progress.currval = 0
         if reg_norm_n4 == 'norm': #saved normed slices
-            for slice_ix in xrange(155): # reshape to strip
+            for slice_ix in progress(xrange(155)): # reshape to strip
                 strip = self.normed_slices[slice_ix].reshape(1200, 240)
                 if np.max(strip) != 0: # set values < 1
                     strip /= np.max(strip)
@@ -120,13 +124,13 @@ class BrainPipeline(object):
                 # save as patient_slice.png
                 io.imsave('Norm_PNG/{}_{}.png'.format(patient_num, slice_ix), strip)
         elif reg_norm_n4 == 'reg':
-            for slice_ix in xrange(155):
+            for slice_ix in progress(xrange(155)):
                 strip = self.slices_by_slice[slice_ix].reshape(1200, 240)
                 if np.max(strip) != 0:
                     strip /= np.max(strip)
                 io.imsave('Training_PNG/{}_{}.png'.format(patient_num, slice_ix), strip)
         else:
-            for slice_ix in xrange(155): # reshape to strip
+            for slice_ix in progress(xrange(155)): # reshape to strip
                 strip = self.normed_slices[slice_ix].reshape(1200, 240)
                 if np.max(strip) != 0: # set values < 1
                     strip /= np.max(strip)
@@ -156,9 +160,17 @@ def save_patient_slices(patients, type):
         a = BrainPipeline(path)
         a.save_patient(type, patient_num)
 
+def s3_dump(directory, bucket):
+    '''
+    dump files from a given directory to an s3 bucket
+    INPUT   (1) string 'directory': directory containing files to save
+            (2) string 'bucket': name od s3 bucket to dump files
+    '''
+    subprocess.call('aws s3 cp' + ' ' + directory + ' ' + 's3://' + bucket + ' ' + '--recursive')
+
 
 if __name__ == '__main__':
-    patients = glob('Training/HGG/**')
+    patients = glob('Training/HGG/**')[:3]
     # save_patient_slices(patients, 'reg')
     # save_patient_slices(patients, 'norm')
     save_patient_slices(patients, 'n4')
