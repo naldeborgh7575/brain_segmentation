@@ -4,7 +4,6 @@ import random
 import progressbar
 from glob import glob
 from skimage import io
-from sklearn.feature_extraction.image import extract_patches_2d
 
 np.random.seed(5) # for reproducibility
 progress = progressbar.ProgressBar(widgets=[progressbar.Bar('*', '[', ']'), progressbar.Percentage(), ' '])
