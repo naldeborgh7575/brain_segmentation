@@ -149,13 +149,25 @@ def s3_dump(directory, bucket):
     '''
     subprocess.call('aws s3 cp' + ' ' + directory + ' ' + 's3://' + bucket + ' ' + '--recursive')
 
+def save_labels(fns):
+    '''
+    INPUT list 'fns': filepaths to all labels
+    '''
+    progress.currval = 0
+    for label_idx in progress(xrange(len(labels))):
+        slices = io.imread(labels[label_idx], plugin = 'simpleitk')
+        for slice_idx in xrange(len(slices)):
+            io.imsave('Labels/{}_{}L.png'.format(label_idx, slice_idx), slices[slice_idx])
+
 
 if __name__ == '__main__':
-    patients = glob('Training/HGG/**')
+    labels = glob('Original_Data/Training/HGG/**/*more*/**.mha')
+    save_labels(labels)
+    # patients = glob('Training/HGG/**')
     # save_patient_slices(patients, 'reg')
     # save_patient_slices(patients, 'norm')
-    save_patient_slices(patients, 'n4')
-
+    # save_patient_slices(patients, 'n4')
+    # s3_dump('Graveyard/Training_PNG/', 'orig-training-png')
     # TO DO
     # make generator to train net in batches (~32)
 
