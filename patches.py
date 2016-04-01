@@ -1,16 +1,44 @@
 import numpy as np
 import random
+import os
 from glob import glob
 from skimage import io
 from sklearn.feature_extraction.image import extract_patches_2d
 
 np.random.seed(5)
+train_files = glob('Patches_Train/**')
 
-def find_patches(training_images, class):
-    load in image
-    reshape, get idx -1
-    if length of unique values == 5:
-        randomly take n pixels of all nonzero values
+def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
+    '''
+    INPUT:  (1) list 'training_images': all training images to select from
+            (2) int 'class_num': class to sample from choice of {0, 1, 2, 3, 4}.
+            (3) tuple 'patch_size': dimensions of patches to be generated defaults to 65 x 65
+    OUTPUT: (1) num_samples patches from class 'class_num' randomly selected
+    '''
+    ct = 0
+    patches = [] #list of all patches
+    h,w = patch_size[0], patch_size[1]
+    while ct < num_samples:
+        im_path = random.choice(training_images) # select image to sample from
+        fn = os.path.basename(im_path)
+        label = io.imread('Labels/' + fn[:-4] + 'L.png')
+
+        if class_num not in np.unique(label): # no pixel label class_num in img
+            continue
+
+        img = io.imread(im_path).reshape(5, 240, 240)[:-1]
+        p = random.choice(np.argwhere(label == class_num)) # center pixel
+        while p[0] < h/2 or p[1] < h/2: # if patch won't fit
+            p = random.choice(np.argwhere(label == class_num))
+
+        p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2)) # patch index
+        patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
+        patches.append(patch) # patch = (n_chan, h, w)
+        import pdb; pdb.set_trace()
+        ct += 1
+    return np.array(patches)
+
+
 
 
 def generate_patches(img_path, patch_size=(65,65), num_patches = 10):
@@ -32,7 +60,7 @@ def generate_patches(img_path, patch_size=(65,65), num_patches = 10):
     return patches, patch_labels
 
 def balance_classes_bin(patches, labels):
-
+    pass
 
     # for slice_strip in self.normed_slices: # slice = strip of 5 images
     #     slices = slice_strip.reshape(5,240,240)
