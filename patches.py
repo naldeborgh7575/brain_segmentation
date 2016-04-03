@@ -18,15 +18,18 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
     ct = 0
     patches, l = [], [] #list of all patches and associated labels
     if class_num == 0:
+        print 'Finding patches of class 0...'
         while ct < num_samples:
             im_path = random.choice(training_images)
             patch, label = random_patches(im_path, patch_size = patch_size)
             patches.append(patch)
             l.append(label)
             ct += 1
+        print 'Done'
         return zip(patches, l)
 
     h,w = patch_size[0], patch_size[1]
+    print 'Finding patches of class {}...'.format(class_num)
     while ct < num_samples:
         im_path = random.choice(training_images) # select image to sample from
         fn = os.path.basename(im_path)
@@ -43,6 +46,7 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
         l.append(label[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]])
         patches.append(patch) # patch = (n_chan, h, w)
         ct += 1
+    print 'Done'
     return zip(patches, l)
 
 def random_patches(im_path, patch_size = (65,65)):
@@ -60,11 +64,9 @@ def random_patches(im_path, patch_size = (65,65)):
 def make_training_patches(training_images, num_total, balanced_classes = True):
     per_class = num_total / 5
     patches = [] # list of tuples (patche, label)
-    class_0 = find_patches(training_images, 0, per_class)
-    class_1 = find_patches(training_images, 1, per_class)
-    class_2 = find_patches(training_images, 2, per_class)
-    class_3 = find_patches(training_images, 3, per_class)
-    class_4 = find_patches(training_images, 4, per_class)
+    for i in xrange(5):
+        patches += (find_patches(training_images, i, per_class))
+    return patches
 
 
 # def generate_patches(img_path, patch_size=(65,65), num_patches = 10):
