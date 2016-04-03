@@ -10,6 +10,7 @@ train_files = glob('Patches_Train/**')
 
 def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
     '''
+    Method for sampling slices with evenly distributed classes
     INPUT:  (1) list 'training_images': all training images to select from
             (2) int 'class_num': class to sample from choice of {0, 1, 2, 3, 4}.
             (3) tuple 'patch_size': dimensions of patches to be generated defaults to 65 x 65
@@ -18,13 +19,14 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
     ct = 0 # keep track of patch number
     h,w = patch_size[0], patch_size[1]
     patches = [] #list of all patches (X)
-    labels = np.full((1, num_samples), class_num) # y
+    labels = np.full(num_samples, class_num) # y
     if class_num == 0:
         print 'Finding patches of class 0...'
         while ct < num_samples:
             im_path = random.choice(training_images)
-            patch = random_patches(im_path, patch_size = patch_size)
+            patch, label = random_patches(im_path, patch_size = patch_size)
             patches.append(patch)
+            labels[ct] = label # acutal label of patch
             # l.append(label)
             # labels.append(label[(h+1)/2][(w+1)/2])
             ct += 1
@@ -51,19 +53,25 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
     return np.array(patches), labels
 
 def random_patches(im_path, patch_size = (65,65)):
+    '''
+    method for randomly sampling patches from a slice
+    INPUT:  (1) string 'im_path': path to image to sample from
+            (2) tuple 'patch_size': size (in pixels) of patches.
+    '''
     fn = os.path.basename(im_path)
     patch_lst = []
-    # label = io.imread('Labels/' + fn[:-4] + 'L.png')
-    imgs = (io.imread(im_path).reshape(5, 240, 240)[:-1]) # exclude label
-    # imgs[4] = label
+    label = io.imread('Labels/' + fn[:-4] + 'L.png')
+    imgs = (io.imread(im_path).reshape(5, 240, 240)) # exclude label
+    imgs[4] = label
     for img in imgs:
-        patch_lst.append(extract_patches_2d(img, patch_size, max_patches = 1, random_state=5)) #set rs for same patch ix among modes
-    patch = np.array(zip(patch_lst[0], patch_lst[1], patch_lst[2], patch_lst[3])[0])
-    # patch_label = np.array(patch_lst[-1][0])
-    return np.array(patch)
+        patch_lst.append(extract_patches_2d(img, patch_size, max_patches = 1, random_state=5)[0]) #set rs for same patch ix among modes
+    patch = np.array(patch_lst[:-1])
+    patch_label = np.array(patch_lst[-1][(patch_size[0] + 1) / 2][(patch_size[1] + 1) / 2]) # center pixel of patch
+    return np.array(patch), patch_label
 
 def make_training_patches(training_images, num_total, balanced_classes = True, patch_size = (65,65)):
     '''
+    Outputs an X and y to train cnn on
     INPUT   (1) list 'training_images': list of all training images to draw from randomly
             (2) int 'num_total': total number pf patches to produce
             (3) bool 'balanced_classes': True for balanced classes. If false, will randomly sample patches leading to high amnt of background
@@ -79,7 +87,16 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
             patches.append(p)
             labels.append(l)
         return np.array(patches).reshape(num_total, 4, patch_size[0], patch_size[1]), np.array(labels).reshape(num_total)
+    else:
+        patches, labels = find_patches(training_images, 0, num_total)
+        return np.array(patches), np.array(labels)
 
+if __name__ == '__main__':
+    train_imgs = glob('Patches_Train/*.png')
+    X, y = make_training_patches(train_imgs, 500)
+
+
+## GRAVEYARD ##
 
 # def generate_patches(img_path, patch_size=(65,65), num_patches = 10):
 #     '''
