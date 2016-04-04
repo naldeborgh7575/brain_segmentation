@@ -83,7 +83,7 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
         per_class = num_total / 5
         patches, labels = [], [] # list of tuples (patche, label)
         for i in xrange(5):
-            p, l = find_patches(training_images, i, per_class)
+            p, l = find_patches(training_images, i, per_class, patch_size=patch_size)
             patches.append(p)
             labels.append(l)
         return np.array(patches).reshape(num_total, 4, patch_size[0], patch_size[1]), np.array(labels).reshape(num_total)
@@ -91,9 +91,22 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
         patches, labels = find_patches(training_images, 0, num_total)
         return np.array(patches), np.array(labels)
 
+def center_33(patches):
+    '''
+    INPUT: list 'patches': list of randomly sampled patches
+    OUTPUT: list of center 33x33 sub-patch for each input patch
+    '''
+    sub_patches = []
+    for mode in patches:
+        subs = np.array([patch[16:49, 16:49] for patch in mode])
+        sub_patches.append(subs)
+    return np.array(sub_patches)
+
 if __name__ == '__main__':
     train_imgs = glob('Patches_Train/*.png')
     X, y = make_training_patches(train_imgs, 320)
+    X_33 = center_33(X)
+
 
 
 ## GRAVEYARD ##
