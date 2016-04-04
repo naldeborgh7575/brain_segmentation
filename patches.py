@@ -93,7 +93,7 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
 
 if __name__ == '__main__':
     train_imgs = glob('Patches_Train/*.png')
-    X, y = make_training_patches(train_imgs, 500)
+    X, y = make_training_patches(train_imgs, 320)
 
 
 ## GRAVEYARD ##
