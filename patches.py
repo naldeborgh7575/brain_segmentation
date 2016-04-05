@@ -64,7 +64,10 @@ def random_patches(im_path, patch_size = (65,65)):
     imgs = (io.imread(im_path).reshape(5, 240, 240)) # exclude label
     imgs[4] = label
     for img in imgs:
-        patch_lst.append(extract_patches_2d(img, patch_size, max_patches = 1, random_state=5)[0]) #set rs for same patch ix among modes
+        p = extract_patches_2d(img, patch_size, max_patches = 1, random_state=5)[0]
+        if np.std(p) != 0:
+            p = (p - np.mean(p)) / np.std(p)
+        patch_lst.append(p) #set rs for same patch ix among modes
     patch = np.array(patch_lst[:-1])
     patch_label = np.array(patch_lst[-1][(patch_size[0] + 1) / 2][(patch_size[1] + 1) / 2]) # center pixel of patch
     return np.array(patch), patch_label
@@ -84,6 +87,8 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
         patches, labels = [], [] # list of tuples (patche, label)
         for i in xrange(5):
             p, l = find_patches(training_images, i, per_class, patch_size=patch_size)
+            if np.std(p) != 0:
+                p =  (p - np.mean(p)) / np.std(p)
             patches.append(p)
             labels.append(l)
         return np.array(patches).reshape(num_total, 4, patch_size[0], patch_size[1]), np.array(labels).reshape(num_total)
@@ -104,7 +109,7 @@ def center_33(patches):
 
 if __name__ == '__main__':
     train_imgs = glob('Patches_Train/*.png')
-    X, y = make_training_patches(train_imgs, 320)
+    X, y = make_training_patches(train_imgs, 1000)
     X_33 = center_33(X)
 
 
