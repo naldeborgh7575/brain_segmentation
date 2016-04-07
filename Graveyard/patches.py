@@ -29,11 +29,11 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
         label = io.imread('Labels/' + fn[:-4] + 'L.png')
         if class_num not in np.unique(label): # no pixel label class_num in img
             continue
-        img = io.imread(im_path).reshape(5, 240, 240)[:-1].astype('float') # exclude label slice
+        img = io.imread(im_path).reshape(5, 240, 240).astype('float') # exclude label slice
         p = random.choice(np.argwhere(label == class_num)) # center pixel
         p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2)) # patch index
         patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
-        if len(np.unique(patch)) == 1 or patch.shape != (4,65,65):
+        if len(np.unique(patch)) == 1 or patch.shape != (5,65,65):
             continue
         patches.append(patch) # patch = (n_chan, h, w)
         ct += 1
@@ -81,7 +81,7 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
                     p[p_l] =  (p[p_l] - np.mean(p[p_l])) / np.std(p[p_l])
             patches.append(p)
             labels.append(l)
-        return np.array(patches).reshape(num_total, 4, patch_size[0], patch_size[1]), np.array(labels).reshape(num_total)
+        return np.array(patches).reshape(num_total, 5, patch_size[0], patch_size[1]), np.array(labels).reshape(num_total)
     else:
         patches, labels = find_patches(training_images, 0, num_total)
         return np.array(patches), np.array(labels)
@@ -101,7 +101,7 @@ def center_33(patches):
     return np.array(sub_patches)
 
 if __name__ == '__main__':
-    train_imgs = glob('Patches_Train/*.png')
+    train_imgs = glob('train_data/*.png')
     X, y = make_training_patches(train_imgs, 100)
     X_33 = center_33(X)
 
