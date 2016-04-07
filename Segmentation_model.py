@@ -47,8 +47,8 @@ class KerasModel(object):
         model.add_input(name='input_1', input_shape=(self.n_chan, self.h_1, self.w_1), batch_input_shape=(self.batch_size, self.n_chan, self.h_1, self.w_1), dtype='float')
 
         # First local conv layer: 7x7 filter + 4x4 maxpooling
-        model.add_node(Dropout(0.9), name='input_dropout', input='input_1')
-        model.add_node(Convolution2D(nb_filter=self.n_filters[0], nb_row=self.local_conv_1, nb_col=self.local_conv_1, border_mode='valid', activation='relu', init='uniform', input_shape=(4,65,65), W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='local_k11', input='input_dropout')
+        # model.add_node(Dropout(0.9), name='input_dropout', input='input_1')
+        model.add_node(Convolution2D(nb_filter=self.n_filters[0], nb_row=self.local_conv_1, nb_col=self.local_conv_1, border_mode='valid', activation='relu', init='uniform', input_shape=(4,65,65), W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='local_k11', input='input_1')
         model.add_node(MaxPooling2D(pool_size=(self.pool_size_1, self.pool_size_1), strides = (1,1), border_mode='valid'), name='local_p11', input='local_k11')
 
         # Second local conv layer: 3x3 filter + 2x2 maxpooling
@@ -57,8 +57,8 @@ class KerasModel(object):
         model.add_node(MaxPooling2D(pool_size = (self.pool_size_2, self.pool_size_2), strides=(1,1), border_mode='valid'), name='local_p21', input='local_k21')
 
         # First global conv layer: 13x13 filter, no maxpooling
-        model.add_node(Dropout(0.75), name='drop_g1', input='input_1')
-        model.add_node(Convolution2D(nb_filter=self.n_filters[2], nb_row=self.global_conv, nb_col=self.global_conv, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='global_1', input='drop_g1')
+        # model.add_node(Dropout(0.9), name='drop_g1', input='input_1')
+        model.add_node(Convolution2D(nb_filter=self.n_filters[2], nb_row=self.global_conv, nb_col=self.global_conv, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='global_1', input='input_1')
         # print self.n_filters[2], self.global_conv
 
         # Concat local and global nodes
@@ -70,9 +70,9 @@ class KerasModel(object):
         model.add_input(name='input_2', input_shape=(self.n_chan, self.h_2, self.w_2))
 
         # Second local conv layer: merge 33x33 input with first net output
-        model.add_node(Dropout(0.9), name='input2_drop', input='input_2')
-        model.add_node(Dropout(0.75), name='merge_drop', input='merge_1')
-        model.add_node(Convolution2D(nb_filter=self.n_filters[0], nb_row=self.local_conv_1, nb_col=self.local_conv_1, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='local_k12', inputs=['merge_drop', 'input2_drop'], merge_mode='concat', concat_axis=1)
+        # model.add_node(Dropout(0.9), name='input2_drop', input='input_2')
+        # model.add_node(Dropout(0.75), name='merge_drop', input='merge_1')
+        model.add_node(Convolution2D(nb_filter=self.n_filters[0], nb_row=self.local_conv_1, nb_col=self.local_conv_1, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='local_k12', inputs=['merge_1', 'input_2'], merge_mode='concat', concat_axis=1)
         model.add_node(MaxPooling2D(pool_size=(self.pool_size_1, self.pool_size_1), strides=(1,1), border_mode='valid'), name='local_p12', input='local_k12')
 
         # Second conv of second local conv layer
