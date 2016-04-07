@@ -1,7 +1,7 @@
 import numpy as np
 import random
 # import theano
-from keras.models import Graph
+from keras.models import Graph, Sequential
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.core import Dropout, Activation, Flatten
@@ -36,7 +36,11 @@ class KerasBinary(object):
         # self.n_train_obs = X_train.shape[0]
         # self.n_test_obs = X_test.shape[0]
 
-    def compile_model(self):
+    def compile_model():
+        model=Sequential()
+        model.add(Convolution2D)
+
+    def compile_model_old(self):
         model = Graph()
 
         # input layer: 33 x 33 patch. split to local and global paths
