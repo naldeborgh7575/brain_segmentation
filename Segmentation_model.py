@@ -3,6 +3,7 @@ from numpy.random import uniform
 import random
 # import theano
 from keras.models import Graph
+from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.core import Dropout, Activation, Flatten
@@ -99,18 +100,19 @@ class KerasModel(object):
         Y_train = np_utils.to_categorical(y_train, 5)
         X_train = X_train.astype("float")
         X_33_train = X_33_train.astype('float')
-        #prep = zip(X_train, X_33_train, Y_train)
-        #np.random.shuffle(prep)
+        prep = zip(X_train, X_33_train, Y_train)
+        np.random.shuffle(prep)
 
-        # X_train = np.array([prep[i][0] for i in xrange(len(prep))])
-        # X33_train = np.array([prep[i][1] for i in xrange(len(prep))])
-        # Y_train = np.array([prep[i][2] for i in xrange(len(prep))])
+        X_train = np.array([prep[i][0] for i in xrange(len(prep))])
+        X33_train = np.array([prep[i][1] for i in xrange(len(prep))])
+        Y_train = np.array([prep[i][2] for i in xrange(len(prep))])
 
-        import pdb; pdb.set_trace()
+        tensor_board = TensorBoard(log_dir='./logs', histogram_freq=1)
+        model_check = ModelCheckpoint('./checkpoint', monitor='weights')
 
         data = {'input_1': X_train, 'input_2': X33_train, 'output_final': Y_train}
 
-        self.model_fit = self.model_comp.fit(data, batch_size=self.batch_size, nb_epoch = self.n_epoch, show_accuracy = True, verbose=1, validation_split=0.1)
+        self.model_fit = self.model_comp.fit(data, batch_size=self.batch_size, nb_epoch = self.n_epoch, show_accuracy = True, verbose=1, validation_split=0.1, callbacks=[tensor_board, model_check])
 
 if __name__ == '__main__':
     pass
