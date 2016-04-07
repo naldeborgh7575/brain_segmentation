@@ -8,3 +8,5 @@ mha_to_png.py
 *.pyc
 *.h5
 *.mha
+*.ipynb
+.ipynb_checkpoints
