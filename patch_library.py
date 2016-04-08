@@ -112,20 +112,20 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
                 (num_total, n_chan (4), patch height, patch width)
     '''
     if balanced_classes:
-        per_class = num_total / 8
+        per_class = num_total / 5
         patches, labels = [], [] # list of tuples (patches, label)
-        for i in xrange(1,5):
+        for i in xrange(5):
             p, l = find_patches(training_images, i, per_class, patch_size=patch_size)
             for p_l in xrange(len(p)):
                 if np.max(p[p_l]) != 0:
                     p[p_l] /= np.max(p[p_l])
             patches.append(p)
             labels.append(l)
-        print 'Finding high-entropy patches...'
-        for i in progress(xrange(4)):
-            p_e,l_e = patches_by_entropy(training_images, num_total/8)
-            patches.append(p_e)
-            labels.append(l_e)
+        # print 'Finding high-entropy patches...'
+        # for i in progress(xrange(4)):
+        #     p_e,l_e = patches_by_entropy(training_images, num_total/8)
+        #     patches.append(p_e)
+        #     labels.append(l_e)
         # import pdb; pdb.set_trace()
         return np.array(patches).reshape(np.shape(patches)[0]*np.shape(patches)[1], 4, patch_size[0], patch_size[1]), np.array(labels).reshape(np.shape(patches)[0]*np.shape(patches)[1])
     else:
