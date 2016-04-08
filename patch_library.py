@@ -26,7 +26,7 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
     ct = 0 # keep track of patch number
     h,w = patch_size[0], patch_size[1]
     patches = [] #list of all patches (X)
-    labels = np.full(num_samples, class_num) # y
+    labels = np.full(num_samples, class_num).astype('float') # y
     print 'Finding patches of class {}...'.format(class_num)
     while ct < num_samples:
         im_path = random.choice(training_images) # select image to sample from
@@ -145,5 +145,6 @@ def center_33(patches):
 
 if __name__ == '__main__':
     train_imgs = glob('train_data/*.png')
-    X, y = make_training_patches(train_imgs, 2500)
+    n_patch = int(raw_input('Number of patches to train on:'))
+    X, y = make_training_patches(train_imgs, n_patch)
     X_33 = center_33(X)
