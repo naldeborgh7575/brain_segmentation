@@ -39,7 +39,7 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
         p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2)) # patch index
         patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
         if len(np.unique(patch)) == 1 or patch.shape != (4,65,65):
-            continue
+            continue # no all-zero or too small patches
         patches.append(patch) # patch = (n_chan, h, w)
         ct += 1
     return np.array(patches), labels
@@ -55,7 +55,7 @@ def patches_by_entropy(training_images, num_samples, patch_size=(65,65)):
     ct = 0 # keep track of patch number
     h,w = patch_size[0], patch_size[1]
     patches = [] #list of all patches (X)
-    labels = np.zeros(num_samples) # y
+    labels = [] # y
     while ct < num_samples:
         im_path = random.choice(training_images) # select image to sample from
         fn = os.path.basename(im_path)
@@ -64,18 +64,21 @@ def patches_by_entropy(training_images, num_samples, patch_size=(65,65)):
             continue
         img = io.imread(im_path).reshape(5, 240, 240)[:-1].astype('float') # exclude label slice
         l_ent = entropy(label, disk(65))
-        top_ent = np.percentile(l_ent, 90)
+        top_ent = np.percentile(l_ent, 80)
         pix = np.argwhere(l_ent >= top_ent)
+        also = np.argwhere(label != 0.)
+        non_zero = [i for i in also if i in pix]
         p_s = random.sample(pix, 3)
+        p_s += random.sample(non_zero, 2)
         for p in p_s:
             p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2))
             patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
             if np.shape(patch) != (4,65,65):
                 continue
             patches.append(patch)
-        labels[ct] = label[p[0],p[1]]
-        ct = len(patches)
-    return np.array(patches[:num_samples]), labels
+            labels.append(label[p[0],p[1]])
+            ct += 1
+    return np.array(patches[:num_samples]), np.array(labels[:num_samples])
 
 def random_patches(im_path, num, patch_size = (65,65)):
     '''
@@ -123,6 +126,7 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
             p_e,l_e = patches_by_entropy(training_images, num_total/8)
             patches.append(p_e)
             labels.append(l_e)
+        # import pdb; pdb.set_trace()
         return np.array(patches).reshape(np.shape(patches)[0]*np.shape(patches)[1], 4, patch_size[0], patch_size[1]), np.array(labels).reshape(np.shape(patches)[0]*np.shape(patches)[1])
     else:
         patches, labels = random_patches(training_images, num_total, patch_size=patch_size)
@@ -141,5 +145,5 @@ def center_33(patches):
 
 if __name__ == '__main__':
     train_imgs = glob('train_data/*.png')
-    X, y = make_training_patches(train_imgs, 2000)
+    X, y = make_training_patches(train_imgs, 100)
     X_33 = center_33(X)
