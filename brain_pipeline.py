@@ -170,20 +170,3 @@ if __name__ == '__main__':
     # s3_dump('Graveyard/Training_PNG/', 'orig-training-png')
     # TO DO
     # make generator to train net in batches (~32)
-
-
-## GRAVEYARD ##
-
-    # def save_norm_patient(self, patient_num):
-    #     '''
-    #     INPUT: int 'patient_num': unique identifier for each patient
-    #     OUTPUT: saves png in Norm_PNG directory
-    #     '''
-    #     print 'Saving scans for patient {}...'.format(patient_num)
-    #     for slice_ix in xrange(155):
-    #         strip = self.normed_slices[slice_ix].reshape(1200, 240)
-    #         if np.max(strip) != 0:
-    #             strip /= np.max(strip)
-    #         if np.min(strip) <= -1:
-    #             strip /= abs(np.min(strip))
-    #         io.imsave('Norm_PNG/{}_{}.png'.format(patient_num, slice_ix), strip)
