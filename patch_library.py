@@ -145,5 +145,5 @@ def center_33(patches):
 
 if __name__ == '__main__':
     train_imgs = glob('train_data/*.png')
-    X, y = make_training_patches(train_imgs, 100)
+    X, y = make_training_patches(train_imgs, 5000)
     X_33 = center_33(X)
