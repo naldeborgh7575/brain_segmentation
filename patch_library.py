@@ -117,8 +117,8 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
         for i in xrange(1,5):
             p, l = find_patches(training_images, i, per_class, patch_size=patch_size)
             for p_l in xrange(len(p)):
-                if np.std(p[p_l]) != 0:
-                    p[p_l] =  (p[p_l] - np.mean(p[p_l])) / np.std(p[p_l])
+                if np.max(p[p_l]) != 0:
+                    p[p_l] /= np.max(p[p_l])
             patches.append(p)
             labels.append(l)
         print 'Finding high-entropy patches...'
@@ -145,6 +145,11 @@ def center_33(patches):
 
 if __name__ == '__main__':
     train_imgs = glob('train_data/*.png')
+    # test_imgs=glob('Patches_Test/*.png')
     n_patch = int(raw_input('Number of patches to train on:'))
+    # n_train = int(raw_input('Number of patches to train on:'))
     X, y = make_training_patches(train_imgs, n_patch)
     X_33 = center_33(X)
+
+    # X_test, y_test = make_training_patches(test_imgs, n_train)
+    # X_33_test = center_33(X_33_test)
