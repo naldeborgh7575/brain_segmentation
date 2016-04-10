@@ -19,14 +19,16 @@ class BasicModel(object):
     def compile_model(self):
         print 'Compiling model...'
         single = Sequential()
-        single.add(Convolution2D(64, 7, 7, border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01), input_shape=(4,33,33)))
-        single.add(Activation('relu'))
+        single.add(Convolution2D(64, 7, 7, border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01), activation='relu',  input_shape=(4,33,33)))
+        single.add(Dropout(0.75))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
         single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
+        single.add(Dropout(0.5))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
         single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
+        single.add(Dropout(0.5))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
         single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
@@ -38,6 +40,7 @@ class BasicModel(object):
 
         sgd = SGD(lr=0.0005, decay=0.1, momentum=0.9)
         single.compile(loss='categorical_crossentropy', optimizer='sgd')
+
         print 'Done.'
         return single
 
