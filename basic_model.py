@@ -4,6 +4,7 @@ import random
 from keras.models import Graph, Sequential
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten, Merge
+from keras.layers.normalization import BatchNormalization
 from keras.layers.core import Dropout, Activation, Flatten
 from keras.regularizers import l1l2
 from keras.optimizers import SGD
@@ -20,13 +21,16 @@ class BasicModel(object):
         print 'Compiling model...'
         single = Sequential()
         single.add(Convolution2D(64, 7, 7, border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01), input_shape=(4,33,33)))
+        single.add(BatchNormalization(mode=1, axis=1))
         single.add(Activation('relu'))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
         single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
+        single.add(BatchNormalization(mode=1, axis=1))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
         single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
+        single.add(BatchNormalization(mode=1, axis=1))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
         single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
