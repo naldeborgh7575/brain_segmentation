@@ -118,7 +118,7 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
             p, l = find_patches(training_images, i, per_class, patch_size=patch_size)
             for p_l in xrange(len(p)):
                 if np.max(p[p_l]) != 0:
-                    p[p_l] /= np.max(p[p_l])
+                    p[p_l] /= 65535.
             patches.append(p)
             labels.append(l)
         # print 'Finding high-entropy patches...'
