@@ -10,3 +10,5 @@ mha_to_png.py
 *.mha
 *.ipynb
 .ipynb_checkpoints
+basic_model_cheat.py
+patch_label.py
