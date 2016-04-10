@@ -158,4 +158,5 @@ def make_training_patches(training_images, num_total, balanced_classes = True, h
 if __name__ == '__main__':
     train_imgs = glob('train_data/*.png')
     n_patch = int(raw_input('Number of patches to train on: '))
-    X, y = make_training_patches(train_imgs, n_patch, patch_size=(33, 33))
+    X, y = make_training_patches(train_imgs, n_patch)
+    X_33 = center_33(X)
