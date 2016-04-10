@@ -16,7 +16,7 @@ from keras.utils import np_utils
 np.random.seed(5)
 
 class KerasModel(object):
-    def __init__(self, h_1=65, w_1=65, h_2=33, w_2=33, n_filters = [64, 64, 160, 5], n_classes = 5, n_chan = 4, n_epoch = 3, batch_size = 128, pool_size_1 = 4, pool_size_2 = 2, local_conv_1 = 7, local_conv_2 = 3, global_conv = 13, output_conv = 21, learning_rate = 0.005, decay_factor = 0.1, momentum_coef_1 = 0.5, momentum_coef_2 = 0.9):
+    def __init__(self, h_1=65, w_1=65, h_2=33, w_2=33, n_filters = [64, 64, 160, 5], n_classes = 5, n_chan = 4, n_epoch = 3, batch_size = 32, pool_size_1 = 4, pool_size_2 = 2, local_conv_1 = 7, local_conv_2 = 3, global_conv = 13, output_conv = 21, learning_rate = 0.005, decay_factor = 0.1, momentum_coef_1 = 0.5, momentum_coef_2 = 0.9):
         self.h_1 = h_1
         self.h_2 = h_2
         self.w_1 = w_1
@@ -42,7 +42,7 @@ class KerasModel(object):
 
     def compile_model(self):
         model = Graph()
-
+        print 'Compiling model...'
         # input layer: 65 x 65 patch. split to local and global paths
         model.add_input(name='input_1', input_shape=(self.n_chan, self.h_1, self.w_1), batch_input_shape=(self.batch_size, self.n_chan, self.h_1, self.w_1), dtype='float')
 
@@ -63,8 +63,7 @@ class KerasModel(object):
 
         # Concat local and global nodes
         model.add_node(Dropout(0.5), name='drop_lp21', input='local_p21')
-        model.add_node(Dropout(0.5), name='drop_global', input='global_1')
-        model.add_node(Convolution2D(nb_filter=self.n_filters[3], nb_row=self.output_conv, nb_col=self.output_conv, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='merge_1', inputs=['drop_lp21', 'drop_global'], merge_mode='concat', concat_axis=1)
+        model.add_node(Convolution2D(nb_filter=self.n_filters[3], nb_row=self.output_conv, nb_col=self.output_conv, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='merge_1', inputs=['drop_lp21', 'global_1'], merge_mode='concat', concat_axis=1)
 
         # Input for second net in cascade
         model.add_input(name='input_2', input_shape=(self.n_chan, self.h_2, self.w_2))
@@ -76,16 +75,15 @@ class KerasModel(object):
         model.add_node(MaxPooling2D(pool_size=(self.pool_size_1, self.pool_size_1), strides=(1,1), border_mode='valid'), name='local_p12', input='local_k12')
 
         # Second conv of second local conv layer
-        model.add_node(Dropout(0.75), name='drop_lp12', input='local_p12')
+        model.add_node(Dropout(0.5), name='drop_lp12', input='local_p12')
         model.add_node(Convolution2D(nb_filter=self.n_filters[1], nb_row=self.local_conv_2, nb_col=self.local_conv_2, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='local_k22', input='drop_lp12')
         model.add_node(MaxPooling2D(pool_size=(self.pool_size_2, self.pool_size_2), strides=(1,1), border_mode='valid'), name='local_p22', input='local_k22')
 
-        # Merge 33x33 input with forst net output, send to global path
-        model.add_node(Convolution2D(nb_filter=self.n_filters[2], nb_row=self.global_conv, nb_col=self.global_conv, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='global_2', inputs=['merge_drop', 'input2_drop'], merge_mode='concat', concat_axis=1)
+        # Merge 33x33 input with first net output, send to global path
+        model.add_node(Convolution2D(nb_filter=self.n_filters[2], nb_row=self.global_conv, nb_col=self.global_conv, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='global_2', inputs=['merge_1', 'input_2'], merge_mode='concat', concat_axis=1)
 
         model.add_node(Dropout(0.75), name='drop_lp22', input='local_p22')
-        model.add_node(Dropout(0.75), name='drop_global22', input='global_2')
-        model.add_node(Convolution2D(nb_filter=self.n_filters[3], nb_row=self.output_conv, nb_col=self.output_conv, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='merge_2', inputs=['drop_lp22', 'drop_global22'], merge_mode='concat', concat_axis=1)
+        model.add_node(Convolution2D(nb_filter=self.n_filters[3], nb_row=self.output_conv, nb_col=self.output_conv, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='merge_2', inputs=['drop_lp22', 'global_2'], merge_mode='concat', concat_axis=1)
 
         # Flatten output of 5x1x1 to 1x5, perform softmax
         model.add_node(Flatten(), name='flatten', input='merge_2')
@@ -94,6 +92,7 @@ class KerasModel(object):
 
         sgd = SGD(lr=0.005, decay=0.1, momentum=0.9)
         model.compile('sgd', loss={'output_final':'categorical_crossentropy'})
+        print 'Done.'
         return model
 
     def fit_model(self, X_train, X_33_train, y_train):
@@ -107,12 +106,12 @@ class KerasModel(object):
         X33_train = np.array([prep[i][1] for i in xrange(len(prep))])
         Y_train = np.array([prep[i][2] for i in xrange(len(prep))])
 
-        tensor_board = TensorBoard(log_dir='./logs', histogram_freq=1)
-        model_check = ModelCheckpoint('./checkpoint', monitor='weights')
+        # tensor_board = TensorBoard(log_dir='./logs', histogram_freq=1)
+        # model_check = ModelCheckpoint('./checkpoint', monitor='weights')
 
         data = {'input_1': X_train, 'input_2': X33_train, 'output_final': Y_train}
 
-        self.model_fit = self.model_comp.fit(data, batch_size=self.batch_size, nb_epoch = self.n_epoch, show_accuracy = True, verbose=1, validation_split=0.1, callbacks=[tensor_board, model_check])
+        self.model_fit = self.model_comp.fit(data, batch_size=self.batch_size, nb_epoch = self.n_epoch, show_accuracy = True, verbose=1, validation_split=0.1) # , callbacks=[tensor_board, model_check])
 
 if __name__ == '__main__':
     pass
