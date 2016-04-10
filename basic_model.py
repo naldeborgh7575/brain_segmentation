@@ -94,7 +94,4 @@ class BasicModel(object):
 #
 #         self.model_comp.fit(X_train, Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1)
 
- # val_acc ~ 40% (50000 samples, 10 epochs, batch size = 128)
- # lr of 0.01 = lower accuracy in 10 epochs with 2500 training samples
- # 1e-6 bounces around a lot, ends up around 30% (2500 samples)
- # try constraining the weights next
+# accuracy reaching ~ 40 with updated architecture (local)
