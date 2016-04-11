@@ -29,18 +29,22 @@ class BasicModel(object):
         single.add(BatchNormalization(mode=0, axis=1))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
-        single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
+        single.add(Convolution2D(nb_filter=256, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
         single.add(BatchNormalization(mode=0, axis=1))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
-        single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
+        single.add(Convolution2D(nb_filter=256, nb_row=4, nb_col=4, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
+        single.add(BatchNormalization(mode=0, axis=1))
+        single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
+        single.add(Dropout(0.5))
+        single.add(Convolution2D(nb_filter=128, nb_row=3, nb_col=3, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
         single.add(Dropout(0.25))
 
         single.add(Flatten())
         single.add(Dense(5))
         single.add(Activation('softmax'))
 
-        sgd = SGD(lr=0.005, decay=0.1, momentum=0.9)
+        sgd = SGD(lr=0.001, decay=0.01, momentum=0.9)
         single.compile(loss='categorical_crossentropy', optimizer='sgd')
         print 'Done.'
         return single
