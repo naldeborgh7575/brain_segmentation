@@ -32,7 +32,7 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
         label = io.imread('Labels/' + fn[:-4] + 'L.png')
 
         # resample if class_num not in selected image
-        while class_num not in np.unique(label):
+        while len(np.argwhere(label == class_num)) < 10:
             im_path = random.choice(training_images)
             fn = os.path.basename(im_path)
             label = io.imread('Labels/' + fn[:-4] + 'L.png')
@@ -126,7 +126,35 @@ def center_33(patches):
         sub_patches.append(subs)
     return np.array(sub_patches)
 
-def make_training_patches(training_images, num_total, balanced_classes = True, half_entropy = False ,patch_size = (65,65)):
+def core_tumor_patches(training_images, num_total, patch_size=(65,65)):
+    h, w = patch_size[0], patch_size[1]
+    per_class = num_total / 4
+    patches, labels = [], []
+    for i in xrange(1,5):
+        p, l = find_patches(training_images, i, per_class, patch_size = patch_size)
+        for img_ix in xrange(len(p)): # 0 <= pixel intensity <= 1
+            for slice in xrange(len(p[img_ix])):
+                if np.max(p[img_ix][slice]) != 0:
+                    p[img_ix][slice] /= np.max(p[img_ix][slice])
+        patches.append(p)
+        labels.append(l)
+    return np.array(patches).reshape(num_total, 4, h, w), np.array(labels).reshape(num_total)
+
+def tumor_134(training_images, num_total, patch_size=(65,65)):
+    h, w = patch_size[0], patch_size[1]
+    per_class = num_total / 3
+    patches, labels = [], []
+    for i in [1,3,4]:
+        p, l = find_patches(training_images, i, per_class, patch_size = patch_size)
+        for img_ix in xrange(len(p)): # 0 <= pixel intensity <= 1
+            for slice in xrange(len(p[img_ix])):
+                if np.max(p[img_ix][slice]) != 0:
+                    p[img_ix][slice] /= np.max(p[img_ix][slice])
+        patches.append(p)
+        labels.append(l)
+    return np.array(patches).reshape((num_total/3)*3, 4, h, w), np.array(labels).reshape((num_total/3)*3)
+
+def make_training_patches(training_images, num_total, balanced_classes = True, half_entropy = False, patch_size = (65,65)):
     '''
     Outputs an X and y to train cnn on
     INPUT   (1) list 'training_images': list of all training images to draw from randomly
@@ -158,5 +186,7 @@ def make_training_patches(training_images, num_total, balanced_classes = True, h
 if __name__ == '__main__':
     train_imgs = glob('train_data/*.png')
     n_patch = int(raw_input('Number of patches to train on: '))
-    X, y = make_training_patches(train_imgs, n_patch)
+    # X, y = make_training_patches(train_imgs, n_patch)
+    # X_33 = center_33(X)
+    X, y = core_tumor_patches(train_imgs, n_patch)
     X_33 = center_33(X)
