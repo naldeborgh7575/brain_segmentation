@@ -25,17 +25,19 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
     h,w = patch_size[0], patch_size[1]
     patches, labels = [], np.full(num_samples, class_num).astype('float') # Xy
     print 'Finding patches of class {}...'.format(class_num)
-    progress.currval = 0
-    for patch in progress(xrange(num_samples)):
+    # progress.currval = 0
+    ct = 0
+    while ct < num_samples:
         im_path = random.choice(training_images)
         fn = os.path.basename(im_path)
         label = io.imread('Labels/' + fn[:-4] + 'L.png')
 
         # resample if class_num not in selected image
-        while len(np.argwhere(label == class_num)) < 10:
-            im_path = random.choice(training_images)
-            fn = os.path.basename(im_path)
-            label = io.imread('Labels/' + fn[:-4] + 'L.png')
+        if len(np.argwhere(label == class_num)) < 10:
+            continue
+            # im_path = random.choice(training_images)
+            # fn = os.path.basename(im_path)
+            # label = io.imread('Labels/' + fn[:-4] + 'L.png')
 
         # select centerpix index (p) and extrapolate patch (p_ix)
         img = io.imread(im_path).reshape(5, 240, 240)[:-1].astype('float')
@@ -44,12 +46,11 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
         patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
 
         # if patch is too small, reselect center pix
-        while patch.shape != (4, h, w):
-            p = random.choice(np.argwhere(label == class_num))
-            p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2))
-            patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
+        if patch.shape != (4, h, w) or len(np.argwhere(patch == 0)) > (h * w)*2:
+            continue
 
         patches.append(patch)
+        ct += 1
     return np.array(patches), labels
 
 def random_patches(im_path, num, patch_size = (65,65)):
@@ -64,12 +65,12 @@ def random_patches(im_path, num, patch_size = (65,65)):
     imgs = (io.imread(im_path).reshape(5, 240, 240)[:-1])
     for img in imgs:
         p = extract_patches_2d(img, patch_size, max_patches = num, random_state=5)[0] # set rs for same patch ix among modes
-    for i in p:
-        if np.std(p) != 0:
-            p /= 65535.
-        patch_lst.append(p)
-    patch = np.array(patch_lst[:-1])
-    patch_label = np.array(patch_lst[-1][(patch_size[0] + 1) / 2][(patch_size[1] + 1) / 2]) # center pixel of patch
+        for i in p:
+            if np.std(p) != 0:
+                p /= 65535.
+            patch_lst.append(p)
+        patch = np.array(patch_lst[:-1])
+        patch_label = np.array(patch_lst[-1][(patch_size[0] + 1) / 2][(patch_size[1] + 1) / 2]) # center pixel of patch
     return np.array(patch), patch_label
 
 def patches_by_entropy(training_images, num_samples, patch_size=(65,65)):
@@ -117,12 +118,23 @@ def patches_by_entropy(training_images, num_samples, patch_size=(65,65)):
 def center_33(patches):
     '''
     For use with cascaded architecture model with multiple inputs
-    INPUT: list 'patches': list of randomly sampled patches
+    INPUT: list 'patches': list of randomly sampled 65x65 patches
     OUTPUT: list of center 33x33 sub-patch for each input patch
     '''
     sub_patches = []
     for mode in patches:
         subs = np.array([patch[16:49, 16:49] for patch in mode])
+        sub_patches.append(subs)
+    return np.array(sub_patches)
+
+def center_5(patches):
+    '''
+    INPUT: list 'patches': list of randomly sampled 33x33 patches
+    OUTPUT: list of center 33x33 sub-patch for each input patch
+    '''
+    sub_patches = []
+    for mode in patches:
+        subs = np.array([patch[14:19, 14:19] for patch in mode])
         sub_patches.append(subs)
     return np.array(sub_patches)
 
@@ -173,8 +185,7 @@ def make_training_patches(training_images, num_total, balanced_classes = True, h
             p, l = find_patches(training_images, i, per_class, patch_size = patch_size)
             for img_ix in xrange(len(p)): # 0 <= pixel intensity <= 1
                 for slice in xrange(len(p[img_ix])):
-                    if np.max(p[img_ix][slice]) != 0:
-                        p[img_ix][slice] /= np.max(p[img_ix][slice])
+                    p[img_ix][slice] /= np.max(p[img_ix][slice])
             patches.append(p)
             labels.append(l)
         return np.array(patches).reshape(num_total, 4, h, w), np.array(labels).reshape(num_total)
@@ -186,7 +197,8 @@ def make_training_patches(training_images, num_total, balanced_classes = True, h
 if __name__ == '__main__':
     train_imgs = glob('train_data/*.png')
     n_patch = int(raw_input('Number of patches to train on: '))
-    # X, y = make_training_patches(train_imgs, n_patch)
-    # X_33 = center_33(X)
-    X, y = core_tumor_patches(train_imgs, n_patch)
+    X, y = make_training_patches(train_imgs, n_patch, patch_size=(65,65))
+    # X_5 = center_5(X)
     X_33 = center_33(X)
+    # X, y = core_tumor_patches(train_imgs, n_patch)
+    # X_33 = center_33(X)
