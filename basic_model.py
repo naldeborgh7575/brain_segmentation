@@ -1,17 +1,18 @@
 import numpy as np
 import random
-# import theano
+import matplotlib.pyplot as plt
+import skimage.io as io
+from sklearn.feature_extraction.image import extract_patches_2d
+from sklearn.metrics import classification_report
 from keras.models import Sequential, model_from_json
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten, Merge, Reshape, MaxoutDense
 from keras.layers.normalization import BatchNormalization
-from keras.layers.core import Dropout, Activation, Flatten
 from keras.regularizers import l1l2
 from keras.optimizers import SGD
 from keras.constraints import maxnorm
-from keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.utils import np_utils
-from sklearn.metrics import classification_report
 
 class BasicModel(object):
     def __init__(self, n_epoch=10, batch_size=32, single_or_dual='single'):
@@ -102,10 +103,13 @@ class BasicModel(object):
         Y_train = np.array([shuffle[i][1] for i in xrange(len(shuffle))])
         es = EarlyStopping(monitor='val_loss', patience=2, verbose=1, mode='auto')
 
+        # Save model after each epoch to check/bm_epoch#-val_loss
+        checkpointer = ModelCheckpoint(filepath="./check/bm_{epoch:02d}-{val_loss:.2f}.hdf5", verbose=1)
+
         if X5_train:
-            self.model_comp.fit([X5_train, X_train], Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1)
+            self.model_comp.fit([X5_train, X_train], Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
         else:
-            self.model_comp.fit(X_train, Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1)
+            self.model_comp.fit(X_train, Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
 
     def class_report(self, X_test, y_test):
         '''
@@ -116,8 +120,24 @@ class BasicModel(object):
         y_pred = self.model_comp.predict_class(X_test)
         print classification_report(y_pred, y_test)
 
-    def predict_image()
+    def predict_image(self, test_img, show=True)
+        imgs = io.imread(test_img).astype('float').reshape(5,240,240)
+        plist = []
 
+        # create patches from an entire slice
+        for img in imgs[:-1]:
+            if np.max(img) != 0:
+                img /= np.max(img)
+            p = extract_patches_2d(img, (33,33))
+            plist.append(p)
+        patches = np.array(zip(np.array(plist[0]), np.array(plist[1]), np.array(plist[2]), np.array(plist[3])))
+
+        # predict classes of each pixel based on model
+        full_pred = self.model_comp.predict_classes(patches)
+        fp1 = full_pred.reshape(208,208)
+        if show:
+            io.imshow(fp1)
+            plt.show
 
 
 #older one, don't change
