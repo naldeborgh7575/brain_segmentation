@@ -100,9 +100,27 @@ class PatchLibrary(object):
             # pick again if slice is only background
             if len(np.unique(label)) == 1:
                 continue
+
             img = io.imread(im_path).reshape(5, 240, 240)[:-1].astype('float')
             l_ent = entropy(label, disk(self.h))
+            top_ent = np.percentile(l_ent, 80)
+
+            # restart if 80th entropy percentile = 0
+            if top_ent == 0:
+                continue
+
+            highest = np.argwhere(l_ent >= top_ent)
+            p_s = random.sample(highest, 5)
+            for p in p_s:
+                p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2))
+                patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
+                #exclude any patches that are too small
+                if np.shape(patch) != (4,65,65):
+                    continue
+                patches.append(patch)
+                labels.append(label[p[0],p[1]])
             ct += 1
+            return np.array(patches[:num_samples]), np.array(labels[:num_samples])
 
 
 def make_training_patches(training_images, num_total, balanced_classes = True, patch_size = (65,65)):
