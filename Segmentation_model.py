@@ -16,7 +16,7 @@ from keras.utils import np_utils
 np.random.seed(5)
 
 class KerasModel(object):
-    def __init__(self, h_1=65, w_1=65, h_2=33, w_2=33, n_filters = [64, 64, 160, 5], n_classes = 5, n_chan = 4, n_epoch = 3, batch_size = 32, pool_size_1 = 4, pool_size_2 = 2, local_conv_1 = 7, local_conv_2 = 3, global_conv = 13, output_conv = 21, learning_rate = 0.005, decay_factor = 0.1, momentum_coef_1 = 0.5, momentum_coef_2 = 0.9):
+    def __init__(self, h_1=65, w_1=65, h_2=33, w_2=33, n_filters = [64, 64, 160, 5], n_classes = 5, n_chan = 4, n_epoch = 3, batch_size = 128, pool_size_1 = 4, pool_size_2 = 2, local_conv_1 = 7, local_conv_2 = 3, global_conv = 13, output_conv = 21, learning_rate = 0.005, decay_factor = 0.1, momentum_coef_1 = 0.5, momentum_coef_2 = 0.9):
         self.h_1 = h_1
         self.h_2 = h_2
         self.w_1 = w_1
@@ -82,7 +82,7 @@ class KerasModel(object):
         # Merge 33x33 input with first net output, send to global path
         model.add_node(Convolution2D(nb_filter=self.n_filters[2], nb_row=self.global_conv, nb_col=self.global_conv, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='global_2', inputs=['merge_1', 'input_2'], merge_mode='concat', concat_axis=1)
 
-        model.add_node(Dropout(0.75), name='drop_lp22', input='local_p22')
+        model.add_node(Dropout(0.25), name='drop_lp22', input='local_p22')
         model.add_node(Convolution2D(nb_filter=self.n_filters[3], nb_row=self.output_conv, nb_col=self.output_conv, border_mode='valid', activation='relu', init='uniform', W_regularizer=l1l2(l1=0.01, l2=0.01), W_constraint=maxnorm(2)), name='merge_2', inputs=['drop_lp22', 'global_2'], merge_mode='concat', concat_axis=1)
 
         # Flatten output of 5x1x1 to 1x5, perform softmax
@@ -90,7 +90,7 @@ class KerasModel(object):
         model.add_node(Dense(5, init='uniform', activation='softmax'), name='dense_output', input='flatten')
         model.add_output(name='output_final', input='dense_output')
 
-        sgd = SGD(lr=0.005, decay=0.1, momentum=0.9)
+        sgd = SGD(lr=0.001, decay=0.01, momentum=0.9)
         model.compile('sgd', loss={'output_final':'categorical_crossentropy'})
         print 'Done.'
         return model
@@ -107,11 +107,11 @@ class KerasModel(object):
         Y_train = np.array([prep[i][2] for i in xrange(len(prep))])
 
         # tensor_board = TensorBoard(log_dir='./logs', histogram_freq=1)
-        # model_check = ModelCheckpoint('./checkpoint', monitor='weights')
+        checkpointer = ModelCheckpoint(filepath="/check/w{epoch:02d}-{val_loss:.2f}.hdf5", verbose=1)
 
         data = {'input_1': X_train, 'input_2': X33_train, 'output_final': Y_train}
 
-        self.model_fit = self.model_comp.fit(data, batch_size=self.batch_size, nb_epoch = self.n_epoch, show_accuracy = True, verbose=1, validation_split=0.1) # , callbacks=[tensor_board, model_check])
+        self.model_fit = self.model_comp.fit(data, batch_size=self.batch_size, nb_epoch = self.n_epoch, show_accuracy = True, verbose=1, validation_split=0.1, callbacks=[checkpointer])
 
 if __name__ == '__main__':
     pass
