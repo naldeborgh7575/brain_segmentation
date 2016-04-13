@@ -3,7 +3,6 @@ import random
 import os
 from glob import glob
 import matplotlib
-# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from skimage import io
 from skimage.filters.rank import entropy
@@ -13,36 +12,82 @@ from sklearn.feature_extraction.image import extract_patches_2d
 
 progress = progressbar.ProgressBar(widgets=[progressbar.Bar('*', '[', ']'), progressbar.Percentage(), ' '])
 np.random.seed(5)
-train_files = glob('Patches_Train/**')
 
-def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
-    '''
-    Method for sampling slices with evenly distributed classes
-    INPUT:  (1) list 'training_images': all training images to select from
-            (2) int 'class_num': class to sample from choice of {0, 1, 2, 3, 4}.
-            (3) tuple 'patch_size': dimensions of patches to be generated defaults to 65 x 65
-    OUTPUT: (1) num_samples patches from class 'class_num' randomly selected. note- if class_num is 0, will choose patches randomly, not exclusively 0s.
-    '''
-    ct = 0 # keep track of patch number
-    h,w = patch_size[0], patch_size[1]
-    patches = [] #list of all patches (X)
-    labels = np.full(num_samples, class_num).astype('float') # y
-    print 'Finding patches of class {}...'.format(class_num)
-    while ct < num_samples:
-        im_path = random.choice(training_images) # select image to sample from
-        fn = os.path.basename(im_path)
-        label = io.imread('Labels/' + fn[:-4] + 'L.png')
-        if class_num not in np.unique(label): # no pixel label class_num in img
-            continue
-        img = io.imread(im_path).reshape(5, 240, 240)[:-1].astype('float') # exclude label slice
-        p = random.choice(np.argwhere(label == class_num)) # center pixel
-        p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2)) # patch index
-        patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
-        if len(np.unique(patch)) == 1 or patch.shape != (4,65,65):
-            continue # no all-zero or too small patches
-        patches.append(patch) # patch = (n_chan, h, w)
-        ct += 1
-    return np.array(patches), labels
+
+class PatchLibrary(object):
+    def __init__(self, patch_size, num_samples, train_data classes=[0,1,2,3,4]):
+        self.patch_size = patch_size
+        self.num_samples = num_samples
+        self.train_data = train_data
+        self.classes = classes
+        self.h = self.patch_size[0]
+        self.w = self.patch_size[1]
+
+    def find_patches(self, class_num, num_patches):
+        '''
+        Helper function for sampling slices with evenly distributed classes
+        INPUT:  (1) list 'training_images': all training images to select from
+                (2) int 'class_num': class to sample from choice of {0, 1, 2, 3, 4}.
+                (3) tuple 'patch_size': dimensions of patches to be generated defaults to 65 x 65
+        OUTPUT: (1) num_samples patches from class 'class_num' randomly selected.
+        '''
+        h,w = self.patch_size[0], self.patch_size[1]
+        patches, labels = [], np.full(num_patches, class_num, 'float')
+        print 'Finding patches of class {}...'.format(class_num)
+        progress.currval = 0
+        for i in progress(xrange(num_patches)):
+            im_path = random.choice(self.train_data)
+            fn = os.path.basename(im_path)
+            label = io.imread('Labels/' + fn[:-4] + 'L.png')
+
+            # resample if class_num not in selected slice
+            while len(np.argwhere(label == class_num)) < 10:
+                im_path = random.choice(self.train_data)
+                fn = os.path.basename(im_path)
+                label = io.imread('Labels/' + fn[:-4] + 'L.png')
+
+            # select centerpix (p) and patch (p_ix)
+            img = io.imread(im_path).reshape(5, 240, 240)[:-1].astype('float')
+            p = random.choice(np.argwhere(label == class_num))
+            p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2))
+            patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
+
+            # resample it patch is empty or too close to edge
+            while patch.shape != (4, h, w) or len(np.unique(patch)) == 1:
+                p = random.choice(np.argwhere(label == class_num))
+                p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2))
+                patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
+
+            patches.append(patch)
+        return np.array(patches), labels
+
+    def center_n(self, n, patches):
+        '''
+        Takes list of patches and returns center nxn for each patch. Use as input for cascaded architectures.
+        INPUT   (1) int 'n': size of center patch to take (square)
+                (2) list 'patches': list of patches to take subpatch of
+        OUTPUT: list of center nxn patches.
+        '''
+        sub_patches = []
+        for mode in patches:
+            subs = np.array([patch[(self.h/2) - (n/2):(self.h/2) + ((n+1)/2),(self.w/2) - (n/2):(self.w/2) + ((n+1)/2)] for patch in mode])
+            sub_patches.append(subs)
+        return np.array(sub_patches)
+
+    def slice_to_patches(self, filename):
+        '''
+        Converts an image to a list of patches with a stride length of 1. Use as input for image prediction.
+        INPUT: str 'filename': path to image to be converted to patches
+        OUTPUT: list of patched version of imput image.
+        '''
+        slices = io.imread(filename).astype('float').reshape(5,240,240)[:-1]
+        plist=[]
+        for slice in slices:
+            if np.max(img) != 0:
+                img /= np.max(img)
+            p = extract_patches_2d(img, (h,w))
+            plist.append(p)
+        return np.array(zip(np.array(plist[0]), np.array(plist[1]), np.array(plist[2]), np.array(plist[3])))
 
 def patches_by_entropy(training_images, num_samples, patch_size=(65,65)):
     '''
@@ -132,24 +177,6 @@ def make_training_patches(training_images, num_total, balanced_classes = True, p
         patches, labels = random_patches(training_images, num_total, patch_size=patch_size)
         return np.array(patches), np.array(labels)
 
-def center_33(patches):
-    '''
-    INPUT: list 'patches': list of randomly sampled patches
-    OUTPUT: list of center 33x33 sub-patch for each input patch
-    '''
-    sub_patches = []
-    for mode in patches:
-        subs = np.array([patch[16:49, 16:49] for patch in mode])
-        sub_patches.append(subs)
-    return np.array(sub_patches)
 
 if __name__ == '__main__':
-    train_imgs = glob('train_data/*.png')
-    # test_imgs=glob('Patches_Test/*.png')
-    n_patch = int(raw_input('Number of patches to train on:'))
-    # n_train = int(raw_input('Number of patches to train on:'))
-    X, y = make_training_patches(train_imgs, n_patch)
-    X_33 = center_33(X)
-
-    # X_test, y_test = make_training_patches(test_imgs, n_train)
-    # X_33_test = center_33(X_33_test)
+    pass
