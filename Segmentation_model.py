@@ -107,7 +107,7 @@ class KerasModel(object):
         Y_train = np.array([prep[i][2] for i in xrange(len(prep))])
 
         # tensor_board = TensorBoard(log_dir='./logs', histogram_freq=1)
-        checkpointer = ModelCheckpoint(filepath="/check/w{epoch:02d}-{val_loss:.2f}.hdf5", verbose=1)
+        checkpointer = ModelCheckpoint(filepath="./check/w{epoch:02d}-{val_loss:.2f}.hdf5", verbose=1)
 
         data = {'input_1': X_train, 'input_2': X33_train, 'output_final': Y_train}
 
