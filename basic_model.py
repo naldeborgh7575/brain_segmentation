@@ -15,14 +15,19 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.utils import np_utils
 
 class BasicModel(object):
-    def __init__(self, n_epoch=10, batch_size=32, single_or_dual='single'):
+    def __init__(self, n_epoch=10, batch_size=32, loaded_model=False, single_or_dual='single'):
+        '''
+        INPUT
+        '''
         self.n_epoch = n_epoch
         self.batch_size = batch_size
         self.single_or_dual = single_or_dual
-        if self.single_or_dual == 'single':
-            self.model_comp = self.compile_model()
-        else:
-            self.model_comp = self.comp_double()
+        self.loaded_model = loaded_model
+        if not self.loaded_model:
+            if self.single_or_dual == 'single':
+                self.model_comp = self.compile_model()
+            else:
+                self.model_comp = self.comp_double()
 
     def compile_model(self):
         print 'Compiling model...'
@@ -91,9 +96,23 @@ class BasicModel(object):
         return model
 
     def load_model_weights(self, model_name):
-        pass
+        '''
+        INPUT  (1) string 'model_name': filepath to model and weights, not including extension
+        OUTPUT: Model with loaded weights. can fit on model using loaded_model=True in fit_model method
+        '''
+        model = '{}.json'.format(model_name)
+        weights = '{}.h5'.format(model_name)
+        with open(model_n) as f:
+            m = f.next()
+        self.model_load = model_from_json(json.loads(m))
 
     def fit_model(self, X_train, y_train, X5_train = None):
+        '''
+        INPUT   (1) numpy array 'X_train': list of patches to train on in form (n_sample, n_channel, h, w)
+                (2) numpy vector 'y_train': list of labels corresponding to X_train patches in form (n_sample,)
+                (3) numpy array 'X5_train': center 5x5 patch in corresponding X_train patch. if None, uses single-path architecture
+        OUTPUT  (1) Fits specified model
+        '''
         Y_train = np_utils.to_categorical(y_train, 5)
 
         shuffle = zip(X_train, Y_train)
@@ -120,7 +139,7 @@ class BasicModel(object):
         y_pred = self.model_comp.predict_class(X_test)
         print classification_report(y_pred, y_test)
 
-    def predict_image(self, test_img, show=True)
+    def predict_image(self, test_img, show=True):
         imgs = io.imread(test_img).astype('float').reshape(5,240,240)
         plist = []
 
