@@ -15,11 +15,10 @@ np.random.seed(5)
 
 
 class PatchLibrary(object):
-    def __init__(self, patch_size, num_samples, train_data classes=[0,1,2,3,4]):
+    def __init__(self, patch_size, train_data, num_samples):
         self.patch_size = patch_size
         self.num_samples = num_samples
         self.train_data = train_data
-        self.classes = classes
         self.h = self.patch_size[0]
         self.w = self.patch_size[1]
 
@@ -126,6 +125,22 @@ class PatchLibrary(object):
                 labels.append(label[p[0],p[1]])
             ct += 1
             return np.array(patches[:num_samples]), np.array(labels[:num_samples])
+
+    def make_training_patches(self, entropy=False, balanced_classes=True, classes=[0,1,2,3,4]):
+        '''
+        Creates X and y for training CNN
+        INPUT   (1) bool 'entropy': if True, half of the patches are chosen based on highest entropy area. defaults to False.
+                (2) bool 'balanced classes': if True, will produce an equal number of each class from the randomly chosen samples
+                (3) list 'classes': list of classes to sample from. Only change default oif entropy is False and balanced_classes is True
+        OUTPUT  (1) X: patches (num_samples, 4_chan, h, w)
+                (2) y: labels (num_samples,)
+        '''
+        if balanced_classes:
+            per_class = self.num_total / len(self.classes)
+            patches, labels = [], []
+            for i in self.classes:
+                p, l = self.find_patches(i, per_class)
+                for img_ix in xrange(len(p)):
 
 
 
