@@ -89,7 +89,7 @@ class BasicModel(object):
         model.add_node(Dense(5, activation='softmax'), name='dense_output', input='flatten')
         model.add_output(name='output', input='dense_output')
 
-        sgd = SGD(lr=0.001, decay=0.01, momentum=0.9)
+        sgd = SGD(lr=0.005, decay=0.1, momentum=0.9)
         model.compile('sgd', loss={'output':'categorical_crossentropy'})
         print 'Done.'
         return model
