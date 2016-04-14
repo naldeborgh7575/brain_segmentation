@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import skimage.io as io
 from sklearn.feature_extraction.image import extract_patches_2d
 from sklearn.metrics import classification_report
-from keras.models import Sequential, model_from_json
+from keras.models import Sequential, Graph, model_from_json
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.layers.core import Dense, Dropout, Activation, Flatten, Merge, Reshape, MaxoutDense
 from keras.layers.normalization import BatchNormalization
@@ -15,37 +15,42 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.utils import np_utils
 
 class BasicModel(object):
-    def __init__(self, n_epoch=10, batch_size=32, loaded_model=False, single_or_dual='single'):
+    def __init__(self, n_epoch=10, n_chan=4, batch_size=128, loaded_model=False, single_or_dual='single', w_reg=0.01):
         '''
         INPUT
         '''
         self.n_epoch = n_epoch
+        self.n_chan = n_chan
         self.batch_size = batch_size
         self.single_or_dual = single_or_dual
         self.loaded_model = loaded_model
+        self.w_reg = w_reg
         if not self.loaded_model:
-            if self.single_or_dual == 'single':
-                self.model_comp = self.compile_model()
-            else:
+            if self.single_or_dual == 'two_path':
+                self.model_comp = self.comp_two_path()
+            elif self.single_or_dual == 'dual':
                 self.model_comp = self.comp_double()
+            else:
+                self.model_comp = self.compile_model()
 
     def compile_model(self):
-        print 'Compiling model...'
+        print 'Compiling single model...'
         single = Sequential()
-        single.add(Convolution2D(64, 7, 7, border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01), input_shape=(4,33,33)))
+
+        single.add(Convolution2D(64, 7, 7, border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg), input_shape=(self.n_chan,33,33)))
         single.add(Activation('relu'))
         single.add(BatchNormalization(mode=0, axis=1))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
-        single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
+        single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg)))
         single.add(BatchNormalization(mode=0, axis=1))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
-        single.add(Convolution2D(nb_filter=256, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
+        single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg)))
         single.add(BatchNormalization(mode=0, axis=1))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
-        single.add(Convolution2D(nb_filter=128, nb_row=3, nb_col=3, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
+        single.add(Convolution2D(nb_filter=128, nb_row=3, nb_col=3, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg)))
         single.add(Dropout(0.25))
 
         single.add(Flatten())
@@ -57,8 +62,40 @@ class BasicModel(object):
         print 'Done.'
         return single
 
+    def comp_two_path(self):
+        print 'Compiling two-path model...'
+        model = Graph()
+        model.add_input(name='input', input_shape=(self.n_chan, 33, 33))
+
+        # local pathway, first convolution/pooling
+        model.add_node(Convolution2D(64, 7, 7, border_mode='valid', activation='relu', W_regularizer=l1l2(l1=0.01, l2=0.01)), name='local_c1', input= 'input')
+        model.add_node(MaxPooling2D(pool_size=(4,4), strides=(1,1), border_mode='valid'), name='local_p1', input='local_c1')
+
+        # local pathway, second convolution/pooling
+        model.add_node(Dropout(0.5), name='drop_lp1', input='local_p1')
+        model.add_node(Convolution2D(64, 3, 3, border_mode='valid', activation='relu', W_regularizer=l1l2(l1=0.01, l2=0.01)), name='local_c2', input='drop_lp1')
+        model.add_node(MaxPooling2D(pool_size=(2,2), strides=(1,1), border_mode='valid'), name='local_p2', input='local_c2')
+
+        # global pathway
+        model.add_node(Convolution2D(160, 13, 13, border_mode='valid', activation='relu', W_regularizer=l1l2(l1=0.01, l2=0.01)), name='global', input='input')
+
+        # merge local and global pathways
+        model.add_node(Dropout(0.5), name='drop_lp2', input='local_p2')
+        model.add_node(Dropout(0.5), name='drop_g', input='global')
+        model.add_node(Convolution2D(5, 21, 21, border_mode='valid', activation='relu',  W_regularizer=l1l2(l1=0.01, l2=0.01)), name='merge', inputs=['drop_lp2', 'drop_g'], merge_mode='concat', concat_axis=1)
+
+        # Flatten output of 5x1x1 to 1x5, perform softmax
+        model.add_node(Flatten(), name='flatten', input='merge')
+        model.add_node(Dense(5, activation='softmax'), name='dense_output', input='flatten')
+        model.add_output(name='output', input='dense_output')
+
+        sgd = SGD(lr=0.001, decay=0.01, momentum=0.9)
+        model.compile('sgd', loss={'output':'categorical_crossentropy'})
+        print 'Done.'
+        return model
+
     def comp_double(self):
-        print 'Compiling model...'
+        print 'Compiling double model...'
         single = Sequential()
         single.add(Convolution2D(64, 7, 7, border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01), input_shape=(4,33,33)))
         single.add(Activation('relu'))
@@ -90,7 +127,7 @@ class BasicModel(object):
         model.add(Dense(5))
         model.add(Activation('softmax'))
 
-        sgd = SGD(lr=0.001, decay=0.1, momentum=0.9)
+        sgd = SGD(lr=0.001, decay=0.01, momentum=0.9)
         model.compile(loss='categorical_crossentropy', optimizer='sgd')
         print 'Done.'
         return model
@@ -125,10 +162,16 @@ class BasicModel(object):
         # Save model after each epoch to check/bm_epoch#-val_loss
         checkpointer = ModelCheckpoint(filepath="./check/bm_{epoch:02d}-{val_loss:.2f}.hdf5", verbose=1)
 
-        if X5_train:
+        if self.single_or_dual == 'dual':
             self.model_comp.fit([X5_train, X_train], Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
+        elif self.single_or_dual == 'two_path':
+            data = {'input': X_train, 'output': Y_train}
+            self.model_comp.fit(data, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
         else:
             self.model_comp.fit(X_train, Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
+
+    def save_model(self, model_name):
+        pass
 
     def class_report(self, X_test, y_test):
         '''
