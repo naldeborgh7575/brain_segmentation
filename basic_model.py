@@ -15,25 +15,33 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.utils import np_utils
 
 class BasicModel(object):
-    def __init__(self, n_epoch=10, n_chan=4, batch_size=128, loaded_model=False, single_or_dual='single', w_reg=0.01):
+    def __init__(self, n_epoch=10, n_chan=4, batch_size=128, loaded_model=False, architecture='single', w_reg=0.01):
         '''
-        INPUT
+        INPUT   (1) int 'n_epoch': number of eopchs to train on. defaults to 10
+                (2) int 'n_chan': number of channels being assessed. defaults to 4
+                (3) int 'batch_size': number of images to train on for each batch. defaults to 128
+                (4) bool 'loaded_model': True if loading a pre-existing model. defaults to False
+                (5) str 'architecture': type of model to use, options = single, dual, or two_path. defaults to single (only currently optimized version)
+                (6) float 'w_reg': value for l1 and l2 regularization. defaults to 0.01
         '''
         self.n_epoch = n_epoch
         self.n_chan = n_chan
         self.batch_size = batch_size
-        self.single_or_dual = single_or_dual
+        self.architecture = architecture
         self.loaded_model = loaded_model
         self.w_reg = w_reg
         if not self.loaded_model:
-            if self.single_or_dual == 'two_path':
+            if self.architecture == 'two_path':
                 self.model_comp = self.comp_two_path()
-            elif self.single_or_dual == 'dual':
+            elif self.architecture == 'dual':
                 self.model_comp = self.comp_double()
             else:
                 self.model_comp = self.compile_model()
 
     def compile_model(self):
+        '''
+        compiles standard single model with 4 convolitional/max-pooling layers.
+        '''
         print 'Compiling single model...'
         single = Sequential()
 
@@ -63,6 +71,9 @@ class BasicModel(object):
         return single
 
     def comp_two_path(self):
+        '''
+        compiles two-path model, takes in a 4x33x33 patch and assesses global and local paths, then merges the results.
+        '''
         print 'Compiling two-path model...'
         model = Graph()
         model.add_input(name='input', input_shape=(self.n_chan, 33, 33))
@@ -95,6 +106,9 @@ class BasicModel(object):
         return model
 
     def comp_double(self):
+        '''
+        double model. Simialar to two-pathway, except takes in a 4x33x33 patch and it's center 4x5x5 patch. merges paths at flatten layer.
+        '''
         print 'Compiling double model...'
         single = Sequential()
         single.add(Convolution2D(64, 7, 7, border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01), input_shape=(4,33,33)))
@@ -162,9 +176,9 @@ class BasicModel(object):
         # Save model after each epoch to check/bm_epoch#-val_loss
         checkpointer = ModelCheckpoint(filepath="./check/bm_{epoch:02d}-{val_loss:.2f}.hdf5", verbose=1)
 
-        if self.single_or_dual == 'dual':
+        if self.architecture == 'dual':
             self.model_comp.fit([X5_train, X_train], Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
-        elif self.single_or_dual == 'two_path':
+        elif self.architecture == 'two_path':
             data = {'input': X_train, 'output': Y_train}
             self.model_comp.fit(data, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
         else:
@@ -200,54 +214,3 @@ class BasicModel(object):
         if show:
             io.imshow(fp1)
             plt.show
-
-
-#older one, don't change
-
-        # single.add(Convolution2D(nb_filter=256, nb_row=4, nb_col=4, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=0.01, l2=0.01)))
-        # single.add(BatchNormalization(mode=0, axis=1))
-        # single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
-        # single.add(Dropout(0.5))
-
-# class BasicModel(object):
-#     def __init__(self, single_or_cascade='single', n_epoch=10, batch_size=128):
-#         self.single_or_cascade = single_or_cascade
-#         self.n_epoch = n_epoch
-#         self.batch_size = batch_size
-#         self.model_comp = self.compile_model()
-#
-#     def compile_model(self):
-#         print 'Compiling model...'
-#         single = Sequential()
-#         single.add(Convolution2D(64, 10, 10, border_mode='valid', input_shape=(4,33,33))) #, W_regularizer=l1l2(l1=0.01, l2=0.01)
-#         single.add(Activation('relu'))
-#         #single.add(Dropout(0.5))
-#         single.add(Convolution2D(nb_filter=128, nb_row=7, nb_col=7, activation='relu', border_mode='valid')) #, W_regularizer=l1l2(l1=0.01, l2=0.01)
-#         single.add(MaxPooling2D(pool_size=(4,4), strides=(1,1)))
-#         #single.add(Dropout(0.5))
-#         single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid')) #, W_regularizer=l1l2(l1=0.01, l2=0.01)
-#         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
-#         single.add(Convolution2D(nb_filter=128, nb_row=3, nb_col=3, activation='relu', border_mode='valid')) #, W_regularizer=l1l2(l1=0.01, l2=0.01)
-#         #single.add(Dropout(0.5))
-#
-#         single.add(Flatten())
-#         single.add(Dense(5))
-#         single.add(Activation('softmax'))
-#
-#         sgd = SGD(lr=0.0001, decay=0.1)
-#         single.compile(loss='categorical_crossentropy', optimizer='adadelta')
-#         print 'Done.'
-#         return single
-#
-#     def fit_model(self, X_train, y_train):
-#         Y_train = np_utils.to_categorical(y_train, 5)
-#
-#         shuffle = zip(X_train, Y_train)
-#         np.random.shuffle(shuffle)
-#
-#         X_train = np.array([shuffle[i][0] for i in xrange(len(shuffle))])
-#         Y_train = np.array([shuffle[i][1] for i in xrange(len(shuffle))])
-#
-#         self.model_comp.fit(X_train, Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1)
-
-# accuracy reaching ~ 40 with updated architecture (local)
