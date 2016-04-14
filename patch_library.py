@@ -90,6 +90,11 @@ class PatchLibrary(object):
         return np.array(zip(np.array(plist[0]), np.array(plist[1]), np.array(plist[2]), np.array(plist[3])))
 
     def patches_by_entropy(self, num_patches=self.num_samples):
+        '''
+        Finds high-entropy patches based on label, allows net to learn borders more effectively.
+        INPUT: int 'num_patches': defaults to num_samples, enter in quantity it using in conjunction with randomly sampled patches.
+        OUTPUT: list of patches (num_patches, 4, h, w) selected by highest entropy
+        '''
         patches, labels = [], []
         ct = 0
         while ct < num_patches:
@@ -103,18 +108,18 @@ class PatchLibrary(object):
 
             img = io.imread(im_path).reshape(5, 240, 240)[:-1].astype('float')
             l_ent = entropy(label, disk(self.h))
-            top_ent = np.percentile(l_ent, 80)
+            top_ent = np.percentile(l_ent, 90)
 
             # restart if 80th entropy percentile = 0
             if top_ent == 0:
                 continue
 
             highest = np.argwhere(l_ent >= top_ent)
-            p_s = random.sample(highest, 5)
+            p_s = random.sample(highest, 3)
             for p in p_s:
                 p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2))
                 patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
-                #exclude any patches that are too small
+                # exclude any patches that are too small
                 if np.shape(patch) != (4,65,65):
                     continue
                 patches.append(patch)
@@ -122,37 +127,6 @@ class PatchLibrary(object):
             ct += 1
             return np.array(patches[:num_samples]), np.array(labels[:num_samples])
 
-
-def make_training_patches(training_images, num_total, balanced_classes = True, patch_size = (65,65)):
-    '''
-    Outputs an X and y to train cnn on
-    INPUT   (1) list 'training_images': list of all training images to draw from randomly
-            (2) int 'num_total': total number pf patches to produce
-            (3) bool 'balanced_classes': True for balanced classes. If false, will randomly sample patches leading to high amnt of background
-            (4) tuple 'patch_size': size(in pixels) of patches to select
-    OUTPUT  (1) array 'patches': randomly selected patches. shape:
-                (num_total, n_chan (4), patch height, patch width)
-    '''
-    if balanced_classes:
-        per_class = num_total / 5
-        patches, labels = [], [] # list of tuples (patches, label)
-        for i in xrange(5):
-            p, l = find_patches(training_images, i, per_class, patch_size=patch_size)
-            for p_l in xrange(len(p)):
-                if np.max(p[p_l]) != 0:
-                    p[p_l] /= 65535.
-            patches.append(p)
-            labels.append(l)
-        # print 'Finding high-entropy patches...'
-        # for i in progress(xrange(4)):
-        #     p_e,l_e = patches_by_entropy(training_images, num_total/8)
-        #     patches.append(p_e)
-        #     labels.append(l_e)
-        # import pdb; pdb.set_trace()
-        return np.array(patches).reshape(np.shape(patches)[0]*np.shape(patches)[1], 4, patch_size[0], patch_size[1]), np.array(labels).reshape(np.shape(patches)[0]*np.shape(patches)[1])
-    else:
-        patches, labels = random_patches(training_images, num_total, patch_size=patch_size)
-        return np.array(patches), np.array(labels)
 
 
 if __name__ == '__main__':
