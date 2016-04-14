@@ -13,7 +13,6 @@ from sklearn.feature_extraction.image import extract_patches_2d
 progress = progressbar.ProgressBar(widgets=[progressbar.Bar('*', '[', ']'), progressbar.Percentage(), ' '])
 np.random.seed(5)
 
-
 def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
     '''
     Method for sampling slices with evenly distributed classes
@@ -46,7 +45,7 @@ def find_patches(training_images, class_num, num_samples, patch_size=(65,65)):
         patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
 
         # if patch is too small, reselect center pix
-        if patch.shape != (4, h, w) or len(np.argwhere(patch == 0)) > (h * w)*2:
+        if patch.shape != (4, h, w) or len(np.argwhere(patch == 0)) > (h * w):
             continue
 
         patches.append(patch)
@@ -77,7 +76,7 @@ def patches_by_entropy(training_images, num_samples, patch_size=(65,65)):
     '''
     INPUT:  (1) list 'training_images': list of filepaths to training images
             (2) int 'num_samples': total number of patches to extract
-            (3) tupel 'patch_size': defaults to 65,65. pixel size of patches to extract
+            (3) tuple 'patch_size': defaults to 65,65. pixel size of patches to extract
     OUTPUT: (1) numpy array 'patches': high entropy patches (num_samples, n_chan, patch_size)
     Finds high-entropy patches based on label, allows net to learn borders more effctively.
     '''
@@ -185,7 +184,8 @@ def make_training_patches(training_images, num_total, balanced_classes = True, h
             p, l = find_patches(training_images, i, per_class, patch_size = patch_size)
             for img_ix in xrange(len(p)): # 0 <= pixel intensity <= 1
                 for slice in xrange(len(p[img_ix])):
-                    p[img_ix][slice] /= np.max(p[img_ix][slice])
+                    if np.max(p[img_ix][slice]) != 0:
+                        p[img_ix][slice] /= np.max(p[img_ix][slice])
             patches.append(p)
             labels.append(l)
         return np.array(patches).reshape(num_total, 4, h, w), np.array(labels).reshape(num_total)
@@ -197,8 +197,8 @@ def make_training_patches(training_images, num_total, balanced_classes = True, h
 if __name__ == '__main__':
     train_imgs = glob('train_data/*.png')
     n_patch = int(raw_input('Number of patches to train on: '))
-    X, y = make_training_patches(train_imgs, n_patch, patch_size=(65,65))
-    # X_5 = center_5(X)
-    X_33 = center_33(X)
+    X, y = make_training_patches(train_imgs, n_patch, patch_size=(33,33))
+    X_5 = center_5(X)
+    # X_33 = center_33(X)
     # X, y = core_tumor_patches(train_imgs, n_patch)
     # X_33 = center_33(X)
