@@ -140,7 +140,17 @@ class PatchLibrary(object):
             patches, labels = [], []
             for i in self.classes:
                 p, l = self.find_patches(i, per_class)
+                # set 0 <= pix intensity <= 1
                 for img_ix in xrange(len(p)):
+                    for slice in xrange(len(p[img_ix])):
+                        if np.max(p[img_ix][slice]) != 0:
+                            p[img_ix][slice] /= np.max(p[img_ix][slice])
+                patches.append(p)
+                labels.append(l)
+            return np.array(patches).reshape(self.num_total, 4, self.h. self.w), np.array(labels).reshape(num_total)
+
+        else:
+            print "Use balanced classes. Don't feel like making random classes method yet."
 
 
 
