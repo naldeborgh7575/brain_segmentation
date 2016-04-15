@@ -2,6 +2,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 import skimage.io as io
+from skimage.segmentation import mark_boundaries
 from sklearn.feature_extraction.image import extract_patches_2d
 from sklearn.metrics import classification_report
 from keras.models import Sequential, Graph, model_from_json
@@ -156,6 +157,7 @@ class BasicModel(object):
         with open(model_n) as f:
             m = f.next()
         self.model_load = model_from_json(json.loads(m))
+        self.model.load_weights(weights)
 
     def fit_model(self, X_train, y_train, X5_train = None):
         '''
@@ -196,7 +198,7 @@ class BasicModel(object):
         y_pred = self.model_comp.predict_class(X_test)
         print classification_report(y_pred, y_test)
 
-    def predict_image(self, test_img, show=True):
+    def predict_image(self, test_img, show=False):
         imgs = io.imread(test_img).astype('float').reshape(5,240,240)
         plist = []
 
@@ -214,3 +216,12 @@ class BasicModel(object):
         if show:
             io.imshow(fp1)
             plt.show
+        else:
+            return fp1
+
+    def show_segmented_image(self, test_img, modality='t1c'):
+        modes = {'flair':0, 't1':1, 't1c':2, 't2':3}
+        segmentation = self.predict_image(test_img, show=False)
+        seg_full = np.pad(segmentation, (16,16), mode='edge')
+        orig_img = io.imread(test_img).reshape(5,240,240)[modes[modality]]
+        overlay = mark_boundaries(orig_img, seg_full)
