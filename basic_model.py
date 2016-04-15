@@ -3,7 +3,8 @@ import random
 import json
 import h5py
 import matplotlib.pyplot as plt
-import skimage.io as io
+from  skimage import io, color, img_as_float
+from skimage.exposure import adjust_gamma
 from skimage.segmentation import mark_boundaries
 from sklearn.feature_extraction.image import extract_patches_2d
 from sklearn.metrics import classification_report
@@ -232,7 +233,32 @@ class BasicModel(object):
 
     def show_segmented_image(self, test_img, modality='t1c'):
         modes = {'flair':0, 't1':1, 't1c':2, 't2':3}
+
         segmentation = self.predict_image(test_img, show=False)
-        seg_full = np.pad(segmentation, (16,16), mode='edge')
-        orig_img = io.imread(test_img).reshape(5,240,240)[modes[modality]]
+        img_mask = np.pad(segmentation, (16,16), mode='edge')
+        ones = np.argwhere(img_mask == 1)
+        twos = np.argwhere(img_mask == 2)
+        threes = np.argwhere(img_mask == 3)
+        fours = np.argwhere(img_mask == 4)
+
+        img_back =  io.imread(test_img).reshape(5,240,240)[modes[modality]]
         overlay = mark_boundaries(orig_img, seg_full)
+
+        # adjust gamma of image
+        image = adjust_gamma(color.gray2rgb(gray_img), 0.65)
+        sliced_image = image.copy()
+        red_multiplier = [1, 0.2, 0.2]
+        yellow_multiplier = [1,1,0.25]
+        green_multiplier = [0.35,0.75,0.25]
+        blue_multiplier = [0,0.25,0.9]
+
+        # change colors of segmented classes
+        for i in xrange(len(ones)):
+            blue_multiplier
+            sliced_image[ones[i][0]][ones[i][1]] = red_multiplier
+        for i in xrange(len(twos)):
+            sliced_image[twos[i][0]][twos[i][1]] = green_multiplier
+        for i in xrange(len(threes)):
+            sliced_image[threes[i][0]][threes[i][1]] = blue_multiplier
+        for i in xrange(len(fours)):
+            sliced_image[fours[i][0]][fours[i][1]] = yellow_multiplier
