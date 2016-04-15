@@ -1,5 +1,7 @@
 import numpy as np
 import random
+import json
+import h5py
 import matplotlib.pyplot as plt
 import skimage.io as io
 from skimage.segmentation import mark_boundaries
@@ -187,7 +189,16 @@ class BasicModel(object):
             self.model_comp.fit(X_train, Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
 
     def save_model(self, model_name):
-        pass
+        '''
+        INPUT string 'model_name': name to save model and weigths under, including filepath but not extension
+        Saves current model as json and weigts as h5df file
+        '''
+        model = '{}.json'.format(model_name)
+        weights = '{}.hdf5'.formate(model_name)
+        json_string = self.model_comp.to_json()
+        self.model_comp.save_weights(weights)
+        with open(model, 'w') as f:
+            json.dump(json_string, f)
 
     def class_report(self, X_test, y_test):
         '''
