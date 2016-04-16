@@ -2,6 +2,7 @@ import numpy as np
 import random
 import json
 import h5py
+from glob import glob
 import matplotlib.pyplot as plt
 from  skimage import io, color, img_as_float
 from skimage.exposure import adjust_gamma
@@ -41,6 +42,9 @@ class BasicModel(object):
                 self.model_comp = self.comp_double()
             else:
                 self.model_comp = self.compile_model()
+        else:
+            model = str(raw_input('Which model should I load? '))
+            self.model_comp = self.load_model_weights(model)
 
     def compile_model(self):
         '''
@@ -155,12 +159,15 @@ class BasicModel(object):
         INPUT  (1) string 'model_name': filepath to model and weights, not including extension
         OUTPUT: Model with loaded weights. can fit on model using loaded_model=True in fit_model method
         '''
+        print 'Loading model {}'.format(model_name)
         model = '{}.json'.format(model_name)
-        weights = '{}.h5'.format(model_name)
-        with open(model_n) as f:
+        weights = '{}.hdf5'.format(model_name)
+        with open(model) as f:
             m = f.next()
-        self.model_load = model_from_json(json.loads(m))
-        self.model.load_weights(weights)
+        model_comp = model_from_json(json.loads(m))
+        model_comp.load_weights(weights)
+        print 'Done.'
+        return model_comp
 
     def fit_model(self, X_train, y_train, X5_train = None):
         '''
@@ -207,7 +214,7 @@ class BasicModel(object):
                 (2) list 'y_test': labels for X_test
         OUTPUT  (1) confusion matrix of precision, recall and f1 score
         '''
-        y_pred = self.model_comp.predict_class(X_test)
+        y_pred = self.model_load.predict_class(X_test)
         print classification_report(y_pred, y_test)
 
     def predict_image(self, test_img, show=False):
@@ -231,7 +238,15 @@ class BasicModel(object):
         else:
             return fp1
 
-    def show_segmented_image(self, test_img, modality='t1c'):
+    def show_segmented_image(self, test_img, modality='t1c', show = False):
+        '''
+        Creates an image of original brain with segmentation overlay
+        INPUT   (1) str 'test_img': filepath to test image for segmentation, including file extension
+                (2) str 'modality': imaging modelity to use as background. defaults to t1c. options: (flair, t1, t1c, t2)
+                (3) bool 'show': If true, shows output image. defaults to False.
+        OUTPUT  (1) if show is True, shows image of segmentation results
+                (2) if show is false, returns segmented image.
+        '''
         modes = {'flair':0, 't1':1, 't1c':2, 't2':3}
 
         segmentation = self.predict_image(test_img, show=False)
@@ -241,8 +256,10 @@ class BasicModel(object):
         threes = np.argwhere(img_mask == 3)
         fours = np.argwhere(img_mask == 4)
 
-        img_back =  io.imread(test_img).reshape(5,240,240)[modes[modality]]
-        overlay = mark_boundaries(orig_img, seg_full)
+        test_im = io.imread(test_img)
+        test_back = test_im.reshape(5,240,240)[-2]
+        # overlay = mark_boundaries(test_back, img_mask)
+        gray_img = img_as_float(test_back)
 
         # adjust gamma of image
         image = adjust_gamma(color.gray2rgb(gray_img), 0.65)
@@ -254,7 +271,6 @@ class BasicModel(object):
 
         # change colors of segmented classes
         for i in xrange(len(ones)):
-            blue_multiplier
             sliced_image[ones[i][0]][ones[i][1]] = red_multiplier
         for i in xrange(len(twos)):
             sliced_image[twos[i][0]][twos[i][1]] = green_multiplier
@@ -262,3 +278,18 @@ class BasicModel(object):
             sliced_image[threes[i][0]][threes[i][1]] = blue_multiplier
         for i in xrange(len(fours)):
             sliced_image[fours[i][0]][fours[i][1]] = yellow_multiplier
+
+        if show:
+            io.imshow(sliced_image)
+            plt.show()
+
+        else:
+            return sliced_image
+
+if __name__ == '__main__':
+    tests = glob('test_data/2_*')
+    test_sort = sorted(tests, key= lambda x: int(x[12:-4]))
+    model = BasicModel(loaded_model=True)
+    segmented_images = []
+    for slice in test_sort[15:145]:
+        segmented_images.append(model.show_segmented_image(slice))
