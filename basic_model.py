@@ -4,7 +4,7 @@ import json
 import h5py
 from glob import glob
 import matplotlib.pyplot as plt
-from  skimage import io, color, img_as_float
+from skimage import io, color, img_as_float
 from skimage.exposure import adjust_gamma
 from skimage.segmentation import mark_boundaries
 from sklearn.feature_extraction.image import extract_patches_2d
