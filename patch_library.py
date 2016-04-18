@@ -33,17 +33,20 @@ class PatchLibrary(object):
         h,w = self.patch_size[0], self.patch_size[1]
         patches, labels = [], np.full(num_patches, class_num, 'float')
         print 'Finding patches of class {}...'.format(class_num)
-        progress.currval = 0
-        for i in progress(xrange(num_patches)):
+
+        ct = 0
+        while ct < num_patches:
             im_path = random.choice(self.train_data)
             fn = os.path.basename(im_path)
             label = io.imread('Labels/' + fn[:-4] + 'L.png')
 
             # resample if class_num not in selected slice
-            while len(np.argwhere(label == class_num)) < 10:
-                im_path = random.choice(self.train_data)
-                fn = os.path.basename(im_path)
-                label = io.imread('Labels/' + fn[:-4] + 'L.png')
+            # while len(np.argwhere(label == class_num)) < 10:
+            #     im_path = random.choice(self.train_data)
+            #     fn = os.path.basename(im_path)
+            #     label = io.imread('Labels/' + fn[:-4] + 'L.png')
+            if len(np.argwhere(label == class_num)) < 10:
+                continue
 
             # select centerpix (p) and patch (p_ix)
             img = io.imread(im_path).reshape(5, 240, 240)[:-1].astype('float')
@@ -52,12 +55,15 @@ class PatchLibrary(object):
             patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
 
             # resample it patch is empty or too close to edge
-            while patch.shape != (4, h, w) or len(np.unique(patch)) == 1:
-                p = random.choice(np.argwhere(label == class_num))
-                p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2))
-                patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
+            # while patch.shape != (4, h, w) or len(np.unique(patch)) == 1:
+            #     p = random.choice(np.argwhere(label == class_num))
+            #     p_ix = (p[0]-(h/2), p[0]+((h+1)/2), p[1]-(w/2), p[1]+((w+1)/2))
+            #     patch = np.array([i[p_ix[0]:p_ix[1], p_ix[2]:p_ix[3]] for i in img])
+            if patch.shape != (4, h, w) or len(np.argwhere(patch == 0)) > (h * w):
+                continue
 
             patches.append(patch)
+            ct += 1
         return np.array(patches), labels
 
     def center_n(self, n, patches):
@@ -88,7 +94,7 @@ class PatchLibrary(object):
             plist.append(p)
         return np.array(zip(np.array(plist[0]), np.array(plist[1]), np.array(plist[2]), np.array(plist[3])))
 
-    def patches_by_entropy(self, num_patches=self.num_samples):
+    def patches_by_entropy(self, num_patches):
         '''
         Finds high-entropy patches based on label, allows net to learn borders more effectively.
         INPUT: int 'num_patches': defaults to num_samples, enter in quantity it using in conjunction with randomly sampled patches.
@@ -136,9 +142,9 @@ class PatchLibrary(object):
                 (2) y: labels (num_samples,)
         '''
         if balanced_classes:
-            per_class = self.num_total / len(self.classes)
+            per_class = self.num_samples / len(classes)
             patches, labels = [], []
-            for i in self.classes:
+            for i in classes:
                 p, l = self.find_patches(i, per_class)
                 # set 0 <= pix intensity <= 1
                 for img_ix in xrange(len(p)):
@@ -147,7 +153,7 @@ class PatchLibrary(object):
                             p[img_ix][slice] /= np.max(p[img_ix][slice])
                 patches.append(p)
                 labels.append(l)
-            return np.array(patches).reshape(self.num_total, 4, self.h. self.w), np.array(labels).reshape(num_total)
+            return np.array(patches).reshape(self.num_samples, 4, self.h, self.w), np.array(labels).reshape(self.num_samples)
 
         else:
             print "Use balanced classes. Don't feel like making random classes method yet."
