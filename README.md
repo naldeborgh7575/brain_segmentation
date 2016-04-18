@@ -13,12 +13,16 @@ There is therefore a need for reliable and automatic segmentation methods in cli
 
 ### Model
 
-I present a four-layer Convolutional Neural Network (CNN) model that that requires minimal pre-processing and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions.
+I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal pre-processing and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions.  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is not consistent in tumor location.
 
 <img alt="Basic ConvNet model architecture" src="images/model_architecture.png" width=400>
 
- The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is not consistent in tumor location. The model is trained on randomly selected 33x33 patches of MRI images in order to classify the center pixel. Each input has 4 channels, one for each imaging modality (T1, T1c, T2 and Flair).
+The model is trained on randomly selected 33x33 patches of MRI images in order to classify the center pixel. Each input has 4 channels, one for each imaging modality (T1, T1c, T2 and Flair).
 
+### Results
+
+<img alt='Ground Truth: Professional Segmentation' src='images/groundtruth.gif'>
+<img alt='Results of CNN Model' src='images/myresults.gif'>
 
 ### Dataset
 
