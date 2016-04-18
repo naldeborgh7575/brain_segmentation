@@ -21,8 +21,9 @@ The model is trained on randomly selected 33x33 patches of MRI images in order t
 
 ### Results
 
-<img alt='Ground Truth: Professional Segmentation' src='images/groundtruth.gif'>
-<img alt='Results of CNN Model' src='images/myresults.gif'>
+<img alt="Result Frame" src="images/results.png" width=404>
+<img alt='Ground Truth: Professional Segmentation' src='images/gt.gif' width=200>
+<img alt='Results of CNN Model' src='images/my_res.gif' width=200>
 
 ### Dataset
 
