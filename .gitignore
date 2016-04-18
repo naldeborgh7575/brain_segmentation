@@ -4,7 +4,6 @@ Training_PNG/
 Normed_PNG/
 Papers/
 mha_to_png.py
-*.png
 *.pyc
 *.h5
 *.mha
