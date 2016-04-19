@@ -5,7 +5,7 @@ Brain tumor segmentation seeks to separate healthy tissue from tumorous regions 
 ## Table of Contents
 1. [Dataset](#dataset)
 2. [MRI Background](#mri-background)
-    * [Pre-Processing](#pre-processing)
+    * [MRI Pre-Processing](#mri-pre-processing)
     * [Pulse Sequences](#pulse-sequences)
     * [Segmentation](#segmentation)
 3. [High Grade Gliomas](#high-grade-gliomas)
@@ -32,7 +32,7 @@ Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors
 <img alt="3D rendering produced by T2 MRI scan" src="images/t29_143.gif" width=250>  
 <sub> <b> Figure 2: </b> (Left) Basic MRI workflow. Slices are taken axially at 1mm increments, creating the 3-dimensional rendering (right). Note that this is only one of four commonly-used pulse sequences used for tumor segmentation. </sub>
 
-### Pre-processing ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/brain_pipeline.py))
+### MRI pre-processing ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/brain_pipeline.py))
 
 One of the challenges in working with MRI data is dealing with the artifacts produced either by inhomogeneity in the magnetic field or small movements made by the patient during scan time. Oftentimes a bias will be present across the resulting scans (Figure 3), which can effect the segmentation results particularly in the setting of computer-based models.
 
@@ -74,7 +74,7 @@ Convolutional Neural Networks(CNNs) are a powerful tool in the field of image re
 
 ### Model Architecture ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/Segmentation_Models.py))
 
-I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal [pre-processing](#pre-processing) and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions (Figure 7).  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is inconsistent in the case of tumor location.
+I use a four-layer Convolutional Neural Network (CNN) model that, besides [n4ITK](#mri-pre-processing) bias correction, requires minimal [pre-processing](https://github.com/naldeborgh7575/brain_segmentation/blob/master/brain_pipeline.py). The model can distinguish between and predict healthy tissue, actively enhancing tumor and non-advancing tumor regions (Figure 7).  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is inconsistent in the case of tumor location.
 
 <img alt="Basic ConvNet model architecture" src="images/model_architecture.png" width=600>  
 <sub><b>Figure 6: </b> Basic model architecture of my segmentation model. Input is four 33x33 patches from a randomly selected slice. Each imaging pulse sequence is input as a channel into the net, followed by four convolution/max pooling layers (note- the last convolutional layer is not followed by max pooling). </sub>
