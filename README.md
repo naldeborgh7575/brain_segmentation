@@ -2,6 +2,10 @@
 
 Brain tumor segmentation seeks to separate healthy tissue from tumorous regions such as the advancing tumor, necrotic core and surrounding edema. This is an essential step in diagnosis and treatment planning, both of which need to take place quickly in the case of a malignancy in order to maximize the likelihood of successful treatment. Due to the slow and tedious nature of manual segmentation, there is a high demand for computer algorithms that can do this quickly and accurately.
 
+## Table of Contents
+1. [Dataset](#dataset)
+2. [MRI Background](#mri-background)
+
 ## Dataset
 
 The data was taken from the
@@ -20,7 +24,7 @@ There are multiple radio frequency pulse sequences that can be used to illuminat
 <img alt="The four MRI modalities used in brain tumor segmentation: Flair, T1, T1-contrasted and T2" src="images/modalities.png" width=200>  
 <sub><b> Figure 2: </b> Flair (top left), T1, T1C and T2 (bottom right) pulse sequences. </sub>
 
-Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four modalities produce 155 slices each. To get an acceptably accurate segmented brain manually, a radiologist has to spend hours in front of a computer tediously determining which voxels belong to which class. In the setting of malignant brain tumors, an algorithmic alternative would allow for more immediate patient care and higher throughput treatment times.
+Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four modalities produce 155 slices each(Figure 3). To get an acceptably accurate segmented brain manually, a radiologist has to spend hours in front of a computer tediously determining which voxels belong to which class. In the setting of malignant brain tumors, an algorithmic alternative would allow for more immediate patient care and higher throughput treatment times.
 
 <img alt="All images produced from a single patient brain scan." src="images/brain_grids.png" width=1000>  
 <sub> <b>Figure 3:</b> Representative scans from each tumor modality. Approximately 600 images need to be analyzed per brain for a segmentation</sub>
