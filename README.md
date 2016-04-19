@@ -11,15 +11,16 @@ Brain tumor segmentation seeks to separate healthy tissue from tumorous regions 
 3. [High Grade Gliomas](#high-grade-gliomas)
 4. [Convolutional Neural Networks](#convolutional-neural-networks)
     * [Model Architecture](#model-architecture)
-    * [Training the Model](#training-the-model)
+    * [Training the Model](#training-the-model)  
+        - [Patch Selection](#patch-selection)
     * [Results](#results)
 5. [Future Directions](#future-directions)
 
 ## Dataset
 
-All MRI data was provided by the [2015 MICCAI BraTS Challenge](http://www.braintumorsegmentation.org), which consists of approximately 250 high-grade glioma cases and 50 low-grade cases. However, due to the limited time  Each dataset contains four different MRI [pulse sequences](#pulse-sequences), each of which is comprised of 155 brain slices, for a total of 620 images per patient. Professional segmentation is provided as ground truth labels for each case. Figure 1 is an example of a scan with the ground truth segmentation. The segmentation labels are represented as follows:
+All MRI data was provided by the [2015 MICCAI BraTS Challenge](http://www.braintumorsegmentation.org), which consists of approximately 250 high-grade glioma cases and 50 low-grade cases. However, due to the limited time  Each dataset contains four different MRI [pulse sequences](#pulse-sequences), each of which is comprised of 155 brain slices, for a total of 620 images per patient. Professional segmentation is provided as ground truth labels for each case. Figure 1 is an example of a scan with the ground truth segmentation. The segmentation labels are represented as follows:  
 
-<img alt="Example of tumor segmentation overlay on T2" src="images/segmented_slice.png" width='400'>
+<img alt="Example of tumor segmentation overlay on T2" src="images/segmented_slice.png" width='400'>  
 <sub><b>Figure 1: </b> Ground truth segmentation overlay on a T2 weighted scan. </sub>   
 
 
@@ -31,14 +32,14 @@ Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors
 <img alt="3D rendering produced by T2 MRI scan" src="images/t29_143.gif" width=250>  
 <sub> <b> Figure 2: </b> (Left) Basic MRI workflow. Slices are taken axially at 1mm increments, creating the 3-dimensional rendering (right). Note that this is only one of four commonly-used pulse sequences used for tumor segmentation. </sub>
 
-### Pre-processing
+### Pre-processing ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/brain_pipeline.py))
 
-One of the challenges in working with MRI data is dealing with the artifacts produced either by inhomogeneity in the magnetic field or small movements made by the patient during scan time. Oftentimes a bias will be present across the resulting scans(Figure 3), which can effect the segmentation results particularly in the setting of computer-based models.
+One of the challenges in working with MRI data is dealing with the artifacts produced either by inhomogeneity in the magnetic field or small movements made by the patient during scan time. Oftentimes a bias will be present across the resulting scans (Figure 3), which can effect the segmentation results particularly in the setting of computer-based models.
 
 <img alt="Bias correction before and after" src="images/n4_correction.png" width=200>  
 <sub><b>Figure 3:</b> Brain scans before and after n4ITK bias correction. Notice the higher intensity at the bottom of the image on the right. This can be a source of false positives in a computer segmentation. </sub>  
 
-I employed an [n4ITK bias correction](https://github.com/naldeborgh7575/brain_segmentation/blob/master/n4_bias_correction.py)<sup>[5](#references)</sup> on all T1 and T1C images in the dataset, which removed the intensity gradient on each scan. Additional image pre-processing requires standardizing the pixel intensities, since MRI intensities are expressed in arbitrary units and may differ significantly between machines used and scan times.
+I employed an [n4ITK bias correction](http://www.ncbi.nlm.nih.gov/pubmed/20378467)<sup>[5](#references)</sup> on all T1 and T1C images in the dataset ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/n4_bias_correction.py)), which removed the intensity gradient on each scan. Additional image pre-processing requires standardizing the pixel intensities, since MRI intensities are expressed in arbitrary units and may differ significantly between machines used and scan times.
 
 ### Pulse sequences
 There are multiple radio frequency pulse sequences that can be used to illuminate different types of tissue. For adequate segmentation there are often four different unique sequences acquired: Fluid Attenuated Inversion Recovery (FLAIR), T1, T1-contrasted, and T2 (Figure 3). Each of these pulse sequences exploits the distinct chemical and physiological characteristics of various tissue types, resulting in contrast between the individual classes. Notice the variability in intensities among the four images in Figure 3, all of which are images of the same brain taken with different pulse sequences.
@@ -71,17 +72,22 @@ High-grade malignant brain tumors are generally associated with a short life exp
 
 Convolutional Neural Networks(CNNs) are a powerful tool in the field of image recognition. They were inspired in the late 1960s by the elucidation of how the [mammalian visual cortex works](https://en.wikipedia.org/wiki/Receptive_field): many networks neurons sensitive to a given 'receptive field' tiled over the entire visual field<sup>[1](#references)</sup>. This aspect of CNNs contributes to their high flexibility and spatial invariance, making them ideal candidates for semantic segmentatiaon of images with high disparity in locations of objects of interest. CNNs are a powerful tool in machine learning that are well suited for the challenging problem tackled in this project.
 
-### Model Architecture
+### Model Architecture ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/Segmentation_Models.py))
 
 I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal [pre-processing](#pre-processing) and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions (Figure 6).  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is inconsistent in the case of tumor location.
 
-<img alt="Basic ConvNet model architecture" src="images/model_architecture.png" width=800>  
+<img alt="Basic ConvNet model architecture" src="images/model_architecture.png" width=600>  
 <sub><b>Figure 6: </b> Basic model architecture of my segmentation model. Input is four 33x33 patches from a randomly selected slice. Each imaging pulse sequence is input as a channel into the net, followed by four convolution/max pooling layers (note- the last convolutional layer is not followed by max pooling). </sub>
 
 
 ### Training the Model
 
-The model is trained on randomly selected 33x33 patches of MRI images in order to classify the center pixel. Each input has 4 channels, one for each imaging pulse sequence (T1, T1c, T2 and Flair).
+The model was created using Keras and Theano and run on an Amazon AWS GPU-optimized EC2 instance for optimized speed.
+
+The model is trained on randomly selected 33x33 patches of MRI images in order to classify the center pixel. Each input has 4 channels, one for each imaging sequence, so the net can learn which relative pixel intensities are hallmarks of each given class. The model is trained on approximately 50,000 patches for four epochs.  [Future directions](#future-directions) will include more training phases and updated methods for patch selection.
+
+### Patch Selection ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/patch_library.py))
+The purpose of training the model on patches is to exploit the fact that a class of any given voxel is highly dependent on the class of it's surrounding voxels. Patches give the net access to information about the pixel's local environment.
 
 ### Results
 
