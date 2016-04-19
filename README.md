@@ -37,9 +37,9 @@ There are multiple radio frequency pulse sequences that can be used to illuminat
 ### Segmentation
 Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four sequences produce 155 slices each (Figure 4). To get a satisfactory manual segmentation a radiologist must spend several hours tediously determining which voxels belong to which class. In the setting of malignant brain tumors, an algorithmic alternative would give clinicians more time focusing on the wellbeing of the patient, allowing for more immediate patient care and higher throughput treatment times.
 
-<img alt="All images produced from a single patient brain scan." src="images/brain_grids.png" width=1000>  
+<img alt="All images produced from a single patient brain scan." src="images/brain_grids.png" width=800>  
 
-<img alt="Results of the complete segmentation of a single brain" src='images/segment.png'>  
+<img alt="Results of the complete segmentation of a single brain" src='images/segment.png' width=800>  
 <sub> <b>Figure 4:</b> (Top) Representative scans from each tumor imaging sequence. Approximately 600 images need to be analyzed per brain for a segmentation. (Bottom) The results of a complete tumor segmentation.</sub>
 
 Automatic tumor segmentation has the potential to decrease lag time between diagnostic tests and treatment by providing an efficient and standardized report of tumor location in a fraction of the time it would take a radiologist to do so.
