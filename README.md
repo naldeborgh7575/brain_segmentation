@@ -14,10 +14,9 @@ Brain tumor segmentation seeks to separate healthy tissue from tumorous regions 
 
 ## Dataset
 
-All MRI data was provided by the [2015 MICCAI BraTS Challenge](http://www.braintumorsegmentation.org), which consists of approximately 300 high-grade glioma cases. Each dataset contains four different MRI [pulse sequences](http://radiopaedia.org/articles/mri-sequences-overview), each of which is comprised of 155 brain slices, for a total of 620 images per patient. Professional segmentation is provided as ground truth labels for each case. Figure 1 is an example of a scan with the ground truth segmentation. The segmentation labels are represented as follows:
+All MRI data was provided by the [2015 MICCAI BraTS Challenge](http://www.braintumorsegmentation.org), which consists of approximately 250 high-grade glioma cases and 50 low-grade cases. However, due to the limited time  Each dataset contains four different MRI [pulse sequences](http://radiopaedia.org/articles/mri-sequences-overview), each of which is comprised of 155 brain slices, for a total of 620 images per patient. Professional segmentation is provided as ground truth labels for each case. Figure 1 is an example of a scan with the ground truth segmentation. The segmentation labels are represented as follows:
 
-<img alt='Ground Truth: Professional Segmentation' src='images/gt.gif' width=200>
-<img alt="Segmentation legend" src='images/color_code.png' width=200>  
+<img alt="Example of tumor segmentation overlay on T2" src="images/segmented_slice.png" width='400'>
 <sub><b>Figure 1: </b> Ground truth segmentation overlay on a T2 weighted scan. </sub>   
 
 
@@ -30,13 +29,13 @@ Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors
 <sub> <b> Figure 2: </b> (Left) Basic MRI workflow. Slices are taken axially at 1mm increments, creating the 3-dimensional rendering (right). Note that this is only one of four commonly-used pulse sequences used for tumor segmentation. </sub>
 
 ### Pulse sequences
-There are multiple radio frequency pulse sequences that can be used to illuminate different classes of tissues. For adequate segmentation there are often four different scans acquired: Fluid Attenuated Inversion Recovery (FLAIR), T1, T1-contrasted, and T2 (Figure 3). Each of these pulse sequences utilizes the chemical and physiological characteristics of the various tumor classes, resulting in contrast between areas with distinct compositions. Notice the variability in intensities among the four images in Figure 3, all of which are images of the same slice of the same brain taken with different pulse sequences.
+There are multiple radio frequency pulse sequences that can be used to illuminate different types of tissue. For adequate segmentation there are often four different unique sequences acquired: Fluid Attenuated Inversion Recovery (FLAIR), T1, T1-contrasted, and T2 (Figure 3). Each of these pulse sequences exploits the distinct chemical and physiological characteristics of various tissue types, resulting in contrast between the individual classes. Notice the variability in intensities among the four images in Figure 3, all of which are images of the same brain taken with different pulse sequences.
 
 <img alt="The four MRI sequences used in brain tumor segmentation: Flair, T1, T1-contrasted and T2" src="images/modalities.png" width=200>  
 <sub><b> Figure 3: </b> Flair (top left), T1, T1C and T2 (bottom right) pulse sequences. </sub>
 
 ### Segmentation
-Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four sequences produce 155 slices each (Figure 4). To get an acceptably accurate manual segmentation a radiologist must spend a number of hours tediously determining which voxels belong to which class. In the setting of malignant brain tumors, an algorithmic alternative would give clinicians more time focusing on the wellbeing of the patient, allowing for more immediate patient care and higher throughput treatment times.
+Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four sequences produce 155 slices each (Figure 4). To get a satisfactory manual segmentation a radiologist must spend several hours tediously determining which voxels belong to which class. In the setting of malignant brain tumors, an algorithmic alternative would give clinicians more time focusing on the wellbeing of the patient, allowing for more immediate patient care and higher throughput treatment times.
 
 <img alt="All images produced from a single patient brain scan." src="images/brain_grids.png" width=1000>  
 
@@ -47,19 +46,18 @@ Automatic tumor segmentation has the potential to decrease lag time between diag
 
 ## High Grade Gliomas
 
-High-grade malignant brain tumors are generally associated with a short life expectancy and limited treatment options. The aggressive nature of this illness necessitates efficient diagnosis and treatment planning to improve quality of and extend patient life.
+High-grade malignant brain tumors are generally associated with a short life expectancy and limited treatment options. The aggressive nature of this illness necessitates efficient diagnosis and treatment planning to improve quality of and extend patient life. This urgency reinforces thee need for reliable and fast automatic segmentation methods in clinical settings. Unfortunately, algorithmic segmentation of these particular tumors has proven to be a very challenging task, due primarily to the fact that they tend to be very structurally and spatially diverse (Figure 5).
 
-<img alt="Example of tumor segmentation overlay on T2" src="images/segmented_slice.png" width='400'>
-
-There is therefore a need for reliable and automatic segmentation methods in clinical settings. However, brain tumors are structurally and spatially diverse by nature, which makes this a challenging problem that has yet to be adequately conquered.
-
-<img alt="Diversity of tumor size, shape and location" src="images/tumor_diversity.png" width='400'>
+<img alt="Diversity of tumor size, shape and location" src="images/tumor_diversity.png" width='400'>  
+<sub><b>Figure 5: </b> Three different examples of high grade gliomas, tumor segmentations are outlined on the bottom images. Notice the variation in size, shape and location in the brain, a quality of these tumors that makes them difficult to segment. </sub>
 
 ## Convolutional Neural Networks
 
+Convolutional Neural Networks(CNNs) are a powerful tool in the field of image recognition. They were inspired in the late 1960s by the elucidation of how the [mammalian visual cortex works](https://en.wikipedia.org/wiki/Receptive_field): many networks neurons sensitive to a given 'receptive field' tiled over the entire visual field ([Hubel 68](http://www.ncbi.nlm.nih.gov/pubmed/4966457)). This aspect of CNNs contributes to their high flexibility and spatial invariance, making them ideal candidates for segmentation of images with high disparity in locations of objects of interest. CNNs are a powerful tool in machine learning that are well suited for the challenging problem tackled in this project.
+
 ### Implementation
 
-I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal pre-processing and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions.  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is not consistent in tumor location.
+I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal pre-processing and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions.  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is inconsistent in the case of tumor location.
 
 <img alt="Basic ConvNet model architecture" src="images/model_architecture.png" width=800>
 
