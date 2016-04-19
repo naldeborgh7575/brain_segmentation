@@ -12,7 +12,7 @@ Brain tumor segmentation seeks to separate healthy tissue from tumorous regions 
 4. [Convolutional Neural Networks](#convolutional-neural-networks)
     * [Model Architecture](#model-architecture)
     * [Training the Model](#training-the-model)  
-        - [Patch Selection](#patch-selection)
+    * [Patch Selection](#patch-selection)
     * [Results](#results)
 5. [Future Directions](#future-directions)
 
@@ -26,7 +26,7 @@ All MRI data was provided by the [2015 MICCAI BraTS Challenge](http://www.braint
 
 ## MRI Background
 
-Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors due primarily to it's noninvasive nature and ability to image diverse tissue types and physiological processes. MRI uses a magnetic gradient and radio frequency pulses to take repetitive axial slices of the brain and construct a 3-dimensional representation(Figure 2). Each brain scan 155 slices, with each pixel representing a 1mm<sup>3</sup> 'voxel.'  
+Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors due primarily to it's noninvasive nature and ability to image diverse tissue types and physiological processes. MRI uses a magnetic gradient and radio frequency pulses to take repetitive axial slices of the brain and construct a 3-dimensional representation(Figure 2). Each brain scan 155 slices, with each pixel representing a 1mm<sup>3</sup> voxel.  
 
 <img alt="Basic MRI Workflow" src="images/MRI_workflow.png" width=450>
 <img alt="3D rendering produced by T2 MRI scan" src="images/t29_143.gif" width=250>  
@@ -82,12 +82,18 @@ I use a four-layer Convolutional Neural Network (CNN) model that that requires m
 
 ### Training the Model
 
-The model was created using Keras and Theano and run on an Amazon AWS GPU-optimized EC2 instance for optimized speed.
+I created the model using Keras and ran it on an Amazon AWS GPU-optimized EC2 instance. I tested several models, but elected to use the 4-layer sequential model shown in Figure 6 due to the two-week time constraint of the project, as it had best initial results and fastest run time.
 
-The model is trained on randomly selected 33x33 patches of MRI images in order to classify the center pixel. Each input has 4 channels, one for each imaging sequence, so the net can learn which relative pixel intensities are hallmarks of each given class. The model is trained on approximately 50,000 patches for four epochs.  [Future directions](#future-directions) will include more training phases and updated methods for patch selection.
+The model was trained on randomly selected 33x33 patches of MRI images to classify the center pixel. Each input has 4 channels, one for each imaging sequence, so the net can learn what relative pixel intensities are hallmarks of each given class. The model is trained on approximately 50,000 patches for six epochs. The model generally begins to overfit after six epochs, and the validation accuracy on balanced classes reaches approximately 55 percent. [Future directions](#future-directions) will include more training phases and updated methods for patch selection.
 
 ### Patch Selection ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/patch_library.py))
-The purpose of training the model on patches is to exploit the fact that a class of any given voxel is highly dependent on the class of it's surrounding voxels. Patches give the net access to information about the pixel's local environment.
+The purpose of training the model on patches is to exploit the fact that a class of any given voxel is highly dependent on the class of it's surrounding voxels. Patches give the net access to information about the pixel's local environment, which influences the final prediction of the patch.
+
+Another important factor in patch selection is to make sure the classes of the input data are balanced. Otherwise, the net will be overwhelmed with background images and fail to classify any of the minority classes. Approximately 98% of the data belongs to the background class (healthy tissue or the black surrounding area), with the remaining 2% of pixels divided among the four tumor classes.
+
+I tried out several different methods for sampling patches, which had a large impact on the results. I began randomly selecting patches of a given class from the data and repeating this for all five classes. However, with this sampling method approximately half of the background patches were just the black area with no brain, so the model classified any patch with brain tissue as tumor.
+
+ 
 
 ### Results
 
