@@ -46,6 +46,10 @@ Automatic tumor segmentation has the potential to decrease lag time between diag
 
 ## High Grade Gliomas
 
+<b>Glioblastoma cases each year (US)</b><sup>[4](#references)</sup>: 12,000  
+<b>Median survival</b>: 14.6 months  
+<b>Five-year survival rate</b>: < 10%
+
 High-grade malignant brain tumors are generally associated with a short life expectancy and limited treatment options. The aggressive nature of this illness necessitates efficient diagnosis and treatment planning to improve quality of and extend patient life. This urgency reinforces thee need for reliable and fast automatic segmentation methods in clinical settings. Unfortunately, algorithmic segmentation of these particular tumors has proven to be a very challenging task, due primarily to the fact that they tend to be very structurally and spatially diverse (Figure 5).
 
 <img alt="Diversity of tumor size, shape and location" src="images/tumor_diversity.png" width='400'>  
@@ -53,7 +57,7 @@ High-grade malignant brain tumors are generally associated with a short life exp
 
 ## Convolutional Neural Networks
 
-Convolutional Neural Networks(CNNs) are a powerful tool in the field of image recognition. They were inspired in the late 1960s by the elucidation of how the [mammalian visual cortex works](https://en.wikipedia.org/wiki/Receptive_field): many networks neurons sensitive to a given 'receptive field' tiled over the entire visual field ([Hubel 68](http://www.ncbi.nlm.nih.gov/pubmed/4966457)). This aspect of CNNs contributes to their high flexibility and spatial invariance, making them ideal candidates for semantic segmentation of images with high disparity in locations of objects of interest. CNNs are a powerful tool in machine learning that are well suited for the challenging problem tackled in this project.
+Convolutional Neural Networks(CNNs) are a powerful tool in the field of image recognition. They were inspired in the late 1960s by the elucidation of how the [mammalian visual cortex works](https://en.wikipedia.org/wiki/Receptive_field): many networks neurons sensitive to a given 'receptive field' tiled over the entire visual field<sup>[1](#references)</sup>. This aspect of CNNs contributes to their high flexibility and spatial invariance, making them ideal candidates for semantic segmentatiaon of images with high disparity in locations of objects of interest. CNNs are a powerful tool in machine learning that are well suited for the challenging problem tackled in this project.
 
 ### Implementation
 
@@ -72,5 +76,7 @@ The model is trained on randomly selected 33x33 patches of MRI images in order t
 
 ### References
 
-    Menze et al., The Multimodal Brain Tumor Image Segmentation Benchmark (BRATS), IEEE Trans. Med. Imaging, 2015.
-    Kistler et. al, The virtual skeleton database: an open access repository for biomedical research and collaboration. JMIR, 2013.
+    1. Hubel, D. and Wiesel, T. (1968). Receptive fields and functional architecture of monkey striate cortex. Journal of Physiology (London), 195, 215–243.
+    2. Kistler et. al, The virtual skeleton database: an open access repository for biomedical research and collaboration. JMIR, 2013.
+    3. Menze et al., The Multimodal Brain Tumor Image Segmentation Benchmark (BRATS), IEEE Trans. Med. Imaging, 2015.
+    4. Stupp et al., Effects of radiotherapy with concomitant and adjuvant temozolomide versus radiotherapy alone on survival in glioblastoma in a randomised phase III study: 5-year analysis of the EORTC-NCIC trial, The Lancet Onc., 2009.
