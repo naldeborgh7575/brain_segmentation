@@ -109,7 +109,7 @@ Unfortunately the model still struggles with class boundary segmentation. The bo
 
 Below is a summary of how well the current model is predicting. As more advances are made this section will be updated. A representative example of a tumor segmentation on test data is displayed in Figure 11. The model can identify each of the four classes with a good amount of accuracy, with the exception of class boundaries, which are smoother in my prediction than the ground truth.
 
-<img alt="Result Frame" src="images/results.png" width=403>  
+<img alt="Result Frame" src="images/results.png" width=404>  
 <img alt='Ground Truth: Professional Segmentation' src='images/gt.gif' width=200>
 <img alt='Results of CNN Model' src='images/my_res.gif' width=200>  
 <sub><b> Figure 11: </b> Results of CNN model segmentation on a single slice (top) with respect to the ground truth, and a 3D representation of the segmentation (bottom). </sub>
