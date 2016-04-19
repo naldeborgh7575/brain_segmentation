@@ -6,7 +6,7 @@ Brain tumor segmentation seeks to separate healthy tissue from tumorous regions 
 
 ## MRI Background:
 
-Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors due primarily to it's noninvasive nature and ability to image diverse tissue types and physiological processes. MRI uses a magnetic gradient and radio frequency pulses to take repetitive axial 'slices' of the brain (Figure 1). Each brain scan produces 155 images.
+Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors due primarily to it's noninvasive nature and ability to image diverse tissue types and physiological processes. MRI uses a magnetic gradient and radio frequency pulses to take repetitive axial 'slices' of the brain and produce a 3-dimensional representation of the brain (Figure 1). Each brain scan 155 slices, with each pixel representing a 1mm<sup>3</sup> 'voxel.'  
 
 <img alt="Basic MRI Workflow" src="images/MRI_workflow.png" width=450>
 <img alt="3D rendering produced by T2 MRI scan" src="images/t29_143.gif" width=250>  
@@ -14,11 +14,11 @@ Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors
 
 There are multiple radio frequency pulse sequences that can be used to illuminate different classes of tissues. For adequate segmentation there are often four different scans acquired: Flair, T1, T1-contrasted, and T2 (Figure 2). Each of these pulse sequences takes advantage of the chemical and physiological characteristics of specific parts of the brain. Notice the variability in contrast of the four images in Figure 2, which are all the same slice of the same brain, but with different regions of the tumor seen at brighter intensities.
 
-<img alt="The four MRI modalities used in brain tumor segmentation: Flair, T1, T1-contrasted and T2" src="images/modalities.png" width=150>
+<img alt="The four MRI modalities used in brain tumor segmentation: Flair, T1, T1-contrasted and T2" src="images/modalities.png" width=165>
+<img src="images/brain_grids.png" width=510>  
+<sub><b> Figure 2: </b> (Right) Flair (top left), T1, T1C and T2 (bottom right) pulse sequences. (Left) Representative scans from each tumor modality. Approximately 600 images need to be analyzed per brain for a segmentation.
 
-<sub><b> Figure 2: </b> Flair (top left), T1, T1C and T2 (bottom right) pulse sequences.
-
-
+Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four modalities produce 155 slices each. To get an acceptably accurate segmented brain manually, a radiologist has to spend hours in front of a computer tediously determining which voxels belong to which class.
 
 
 ## Background:
