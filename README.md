@@ -22,7 +22,7 @@ There are multiple radio frequency pulse sequences that can be used to illuminat
 
 Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four modalities produce 155 slices each. To get an acceptably accurate segmented brain manually, a radiologist has to spend hours in front of a computer tediously determining which voxels belong to which class. In the setting of malignant brain tumors, an algorithmic alternative would allow for more immediate patient care and higher throughput treatment times.
 
-<img alt="All images produced from a single patient brain scan." src="images/brain_grids.png" width=800>  
+<img alt="All images produced from a single patient brain scan." src="images/brain_grids.png" width=1000>  
 <sub> <b>Figure 3:</b> Representative scans from each tumor modality. Approximately 600 images need to be analyzed per brain for a segmentation</sub>
 
 ## High Grade Gliomas
