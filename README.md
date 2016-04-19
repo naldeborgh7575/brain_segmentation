@@ -61,9 +61,10 @@ Convolutional Neural Networks(CNNs) are a powerful tool in the field of image re
 
 ### Implementation
 
-I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal pre-processing and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions.  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is inconsistent in the case of tuamor location.
+I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal pre-processing and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions (Figure 6).  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is inconsistent in the case of tumor location.
 
-<img alt="Basic ConvNet model architecture" src="images/model_architecture.png" width=800>
+<img alt="Basic ConvNet model architecture" src="images/model_architecture.png" width=800>  
+<sub><b>Figure 6: </b> Basic model architecture of my segmentation model. Input is four 33x33 patches from a randomly selected slice. Each imaging pulse sequence is input as a channel into the net, followed by four convolution/max pooling layers (note- the last convolutional layer is not followed by max pooling). </sub>
 
 The model is trained on randomly selected 33x33 patches of MRI images in order to classify the center pixel. Each input has 4 channels, one for each imaging pulse sequence (T1, T1c, T2 and Flair).
 

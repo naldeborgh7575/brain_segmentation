@@ -19,8 +19,8 @@ from keras.constraints import maxnorm
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.utils import np_utils
 
-class BasicModel(object):
-    def __init__(self, n_epoch=10, n_chan=4, batch_size=128, loaded_model=False, architecture='single', w_reg=0.01):
+class SegmentationModel(object):
+    def __init__(self, n_epoch=10, n_chan=4, batch_size=128, loaded_model=False, architecture='single', w_reg=0.01, n_filters=[64,128,128,128], k_dims = [7,5,5,3], activation = 'relu'):
         '''
         INPUT   (1) int 'n_epoch': number of eopchs to train on. defaults to 10
                 (2) int 'n_chan': number of channels being assessed. defaults to 4
@@ -28,6 +28,9 @@ class BasicModel(object):
                 (4) bool 'loaded_model': True if loading a pre-existing model. defaults to False
                 (5) str 'architecture': type of model to use, options = single, dual, or two_path. defaults to single (only currently optimized version)
                 (6) float 'w_reg': value for l1 and l2 regularization. defaults to 0.01
+                (7) list 'n_filters': number of filters for each convolutional layer (4 total)
+                (8) list 'k_dims': dimension of kernel at each layer (will be a k_dim[n] x k_dim[n] square). Four total.
+                (9) string 'activation': activation to use at each convolutional layer. defaults to relu.
         '''
         self.n_epoch = n_epoch
         self.n_chan = n_chan
@@ -35,6 +38,9 @@ class BasicModel(object):
         self.architecture = architecture
         self.loaded_model = loaded_model
         self.w_reg = w_reg
+        self.n_filters = n_filters
+        self.k_dims = k_dims
+        self.activation = activation
         if not self.loaded_model:
             if self.architecture == 'two_path':
                 self.model_comp = self.comp_two_path()
@@ -53,20 +59,20 @@ class BasicModel(object):
         print 'Compiling single model...'
         single = Sequential()
 
-        single.add(Convolution2D(64, 7, 7, border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg), input_shape=(self.n_chan,33,33)))
-        single.add(Activation('relu'))
+        single.add(Convolution2D(self.n_filters[0], self.k_dims[0], self.k_dims[0], border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg), input_shape=(self.n_chan,33,33)))
+        single.add(Activation(self.activation))
         single.add(BatchNormalization(mode=0, axis=1))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
-        single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg)))
+        single.add(Convolution2D(self.n_filters[1], self.k_dims[1], self.k_dims[1], activation=self.activation, border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg)))
         single.add(BatchNormalization(mode=0, axis=1))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
-        single.add(Convolution2D(nb_filter=128, nb_row=5, nb_col=5, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg)))
+        single.add(Convolution2D(self.n_filters[2], self.k_dims[2], self.k_dims[2], activation=self.activation, border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg)))
         single.add(BatchNormalization(mode=0, axis=1))
         single.add(MaxPooling2D(pool_size=(2,2), strides=(1,1)))
         single.add(Dropout(0.5))
-        single.add(Convolution2D(nb_filter=128, nb_row=3, nb_col=3, activation='relu', border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg)))
+        single.add(Convolution2D(self.n_filters[3], self.k_dims[3], self.k_dims[3], activation=self.activation, border_mode='valid', W_regularizer=l1l2(l1=self.w_reg, l2=self.w_reg)))
         single.add(Dropout(0.25))
 
         single.add(Flatten())
@@ -287,9 +293,10 @@ class BasicModel(object):
             return sliced_image
 
 if __name__ == '__main__':
-    tests = glob('test_data/2_*')
-    test_sort = sorted(tests, key= lambda x: int(x[12:-4]))
-    model = BasicModel(loaded_model=True)
-    segmented_images = []
-    for slice in test_sort[15:145]:
-        segmented_images.append(model.show_segmented_image(slice))
+    model = SegmentationModel()
+    # tests = glob('test_data/2_*')
+    # test_sort = sorted(tests, key= lambda x: int(x[12:-4]))
+    # model = BasicModel(loaded_model=True)
+    # segmented_images = []
+    # for slice in test_sort[15:145]:
+    #     segmented_images.append(model.show_segmented_image(slice))
