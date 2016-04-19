@@ -2,9 +2,12 @@
 
 Brain tumor segmentation seeks to separate healthy tissue from tumorous regions such as the advancing tumor, necrotic core and surrounding edema. This is an essential step in diagnosis and treatment planning, both of which need to take place quickly in the case of a malignancy in order to maximize the likelihood of successful treatment. Due to the slow and tedious nature of manual segmentation, there is a high demand for computer algorithms that can do this quickly and accurately.
 
+## Dataset
+
+The data was taken from the
 
 
-## MRI Background:
+## MRI Background
 
 Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors due primarily to it's noninvasive nature and ability to image diverse tissue types and physiological processes. MRI uses a magnetic gradient and radio frequency pulses to take repetitive axial 'slices' of the brain and produce a 3-dimensional representation of the brain (Figure 1). Each brain scan 155 slices, with each pixel representing a 1mm<sup>3</sup> 'voxel.'  
 
@@ -14,14 +17,16 @@ Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors
 
 There are multiple radio frequency pulse sequences that can be used to illuminate different classes of tissues. For adequate segmentation there are often four different scans acquired: Flair, T1, T1-contrasted, and T2 (Figure 2). Each of these pulse sequences takes advantage of the chemical and physiological characteristics of specific parts of the brain. Notice the variability in contrast of the four images in Figure 2, which are all the same slice of the same brain, but with different regions of the tumor seen at brighter intensities.
 
-<img alt="The four MRI modalities used in brain tumor segmentation: Flair, T1, T1-contrasted and T2" src="images/modalities.png" width=211>
+<img alt="The four MRI modalities used in brain tumor segmentation: Flair, T1, T1-contrasted and T2" src="images/modalities.png" width=212>
 <img src="images/brain_grids.png" width=650>  
 <sub><b> Figure 2: </b> (Right) Flair (top left), T1, T1C and T2 (bottom right) pulse sequences. (Left) Representative scans from each tumor modality. Approximately 600 images need to be analyzed per brain for a segmentation.
 
-Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four modalities produce 155 slices each. To get an acceptably accurate segmented brain manually, a radiologist has to spend hours in front of a computer tediously determining which voxels belong to which class.
+Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four modalities produce 155 slices each. To get an acceptably accurate segmented brain manually, a radiologist has to spend hours in front of a computer tediously determining which voxels belong to which class. In the setting of malignant brain tumors, an algorithmic alternative would allow for more immediate patient care and higher throughput treatment times.
 
 
-## Background:
+## High Grade Gliomas
+
+
 
 Automatic tumor segmentation has the potential to decrease lag time between diagnostic tests and treatment by providing an efficient and standardized report of tumor location in a fraction of the time it would take a radiologist to do so.
 
@@ -51,6 +56,9 @@ The model is trained on randomly selected 33x33 patches of MRI images in order t
 <img alt='Ground Truth: Professional Segmentation' src='images/gt.gif' width=200>
 <img alt='Results of CNN Model' src='images/my_res.gif' width=200>
 
-### Dataset
+### References
 
-This dataset was provided by the [2015 MICCAI BraTS Challenge](http://www.braintumorsegmentation.org)
+This dataset was provided by the [2015 MICCAI BraTS Challenge](http://www.braintumorsegmentation.org)  
+
+    Menze et al., The Multimodal Brain Tumor Image Segmentation Benchmark (BRATS), IEEE Trans. Med. Imaging, 2015.
+    Kistler et. al, The virtual skeleton database: an open access repository for biomedical research and collaboration. JMIR, 2013.
