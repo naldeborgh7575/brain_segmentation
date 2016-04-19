@@ -2,16 +2,22 @@
 
 Brain tumor segmentation seeks to separate healthy tissue from tumorous regions such as the advancing tumor, necrotic core and surrounding edema. This is an essential step in diagnosis and treatment planning, both of which need to take place quickly in the case of a malignancy in order to maximize the likelihood of successful treatment. Due to the slow and tedious nature of manual segmentation, there is a high demand for computer algorithms that can do this quickly and accurately.
 
+
+
 ## MRI Background:
 
-Magnetic Resonance Imaging (MRI) is 
+Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors due primarily to it's noninvasive nature and ability to image diverse tissue types and physiological processes. MRI uses a magnetic gradient and radio frequency pulses to take repetitive axial 'slices' of the brain (Figure 1). Each brain scan produces 155 images.
+
+<img alt="Basic MRI Workflow" src="images/MRI_workflow.png" width=450>
+<img alt="3D rendering produced by T2 MRI scan" src="images/t29_143.gif" width=200>
+<sub> <b> Figure 1: </b> (Left) Basic MRI workflow. Slices are taken axially at 1mm increments, creating the 3-dimensional rendering on the right. </sub>
 
 
-Automatic tumor segmentation has the potential to decrease lag time between diagnostic tests and treatment by providing an efficient and standardized report of tumor location in a fraction of the time it would take a radiologist to do so.
 
-Magnetic Resonance Imaging (MRI) in particular has become the state of the art in brain tumor diagnosis, due to it's noninvasive nature and ability to image diverse tissue types and physiological processes.
 
 ## Background:
+
+Automatic tumor segmentation has the potential to decrease lag time between diagnostic tests and treatment by providing an efficient and standardized report of tumor location in a fraction of the time it would take a radiologist to do so.
 
 High-grade malignant brain tumors are generally associated with a short life expectancy and limited treatment options. The aggressive nature of this illness necessitates efficient diagnosis and treatment planning to improve quality of and extend patient life. Magnetic Resonance Imaging (MRI) is a common technique for assessing brain tumors and determining next steps, but the large quantity of data produced by these scans prohibits precise manual segmentation in a feasible amount of time.
 
