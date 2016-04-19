@@ -114,12 +114,25 @@ Below is a summary of how well the current model is predicting. As more advances
 <img alt='Results of CNN Model' src='images/my_res.gif' width=200>  
 <sub><b> Figure 11: </b> Results of CNN model segmentation on a single slice (top) with respect to the ground truth, and a 3D representation of the segmentation (bottom). </sub>
 
+Notice that towards the top of the 3-dimensional network results representation some of the cerebrospinal fluid (CSF) is incorrectly classified as tumor. This is unsurprising, considering that the CSF has similar features to parts of the tumor in some pulse sequences. There are several potential solutions for this:
+
+1. Pre-process the images by masking CSF (much easier than tumors to extract)
+2. Train the model on more CSF-containing patches so it can learn to distinguish between CSF and tumor
+3. Add more nodes to the model, which may cause it to learn more features from the current patches.
+
+
+
 ## Future Directions
+
+While my model yields promising results, an application such as this leaves no room for errors or false positives. In a surgical setting it is essential to remove as much of the tumor mass as possible without damaging any surrounding healthy tissue. There are countless ways to improve this model, ranging from the overall architecture, to adjusting how we sample the data.
+
+When I began building the model I built an architecture based on one built by [Havaei et al](http://arxiv.org/pdf/1505.03540.pdf), which uses a cascaded, two-pathway architecture and looks at both local and global features of patches. I elected to use the simpler model to meet the two-week deadline for this project, but in the future I will work on tuning models similar to this to improve upon the accuracy of this model.
 
 ## References
 
-    1. Hubel, D. and Wiesel, T. (1968). Receptive fields and functional architecture of monkey striate cortex. Journal of Physiology (London), 195, 215–243.
+    1. Havaei, M. et. al, Brain Tumor Segmentation with Deep Neural Networks. arXiv preprint arXiv:1505.03540, 2015.
+    1. Hubel, D. and Wiesel, T. Receptive fields and functional architecture of monkey striate cortex. Journal of Physiology 1968.
     2. Kistler et. al, The virtual skeleton database: an open access repository for biomedical research and collaboration. JMIR, 2013.
     3. Menze et al., The Multimodal Brain Tumor Image Segmentation Benchmark (BRATS), IEEE Trans. Med. Imaging, 2015.
     4. Stupp et al., Effects of radiotherapy with concomitant and adjuvant temozolomide versus radiotherapy alone on survival in glioblastoma in a randomised phase III study: 5-year analysis of the EORTC-NCIC trial. The Lancet Onc., 2009.
-    5. Tustison, NJ. et. al, N4ITK: improved N3 bias correction. IEEE Trans Med Imaging, 2010
+    5. Tustison, NJ. et. al, N4ITK: improved N3 bias correction. IEEE Trans Med Imaging, 2010.
