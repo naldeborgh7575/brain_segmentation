@@ -53,11 +53,11 @@ High-grade malignant brain tumors are generally associated with a short life exp
 
 ## Convolutional Neural Networks
 
-Convolutional Neural Networks(CNNs) are a powerful tool in the field of image recognition. They were inspired in the late 1960s by the elucidation of how the [mammalian visual cortex works](https://en.wikipedia.org/wiki/Receptive_field): many networks neurons sensitive to a given 'receptive field' tiled over the entire visual field ([Hubel 68](http://www.ncbi.nlm.nih.gov/pubmed/4966457)). This aspect of CNNs contributes to their high flexibility and spatial invariance, making them ideal candidates for segmentation of images with high disparity in locations of objects of interest. CNNs are a powerful tool in machine learning that are well suited for the challenging problem tackled in this project.
+Convolutional Neural Networks(CNNs) are a powerful tool in the field of image recognition. They were inspired in the late 1960s by the elucidation of how the [mammalian visual cortex works](https://en.wikipedia.org/wiki/Receptive_field): many networks neurons sensitive to a given 'receptive field' tiled over the entire visual field ([Hubel 68](http://www.ncbi.nlm.nih.gov/pubmed/4966457)). This aspect of CNNs contributes to their high flexibility and spatial invariance, making them ideal candidates for semantic segmentation of images with high disparity in locations of objects of interest. CNNs are a powerful tool in machine learning that are well suited for the challenging problem tackled in this project.
 
 ### Implementation
 
-I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal pre-processing and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions.  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is inconsistent in the case of tumor location.
+I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal pre-processing and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions.  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is inconsistent in the case of tuamor location.
 
 <img alt="Basic ConvNet model architecture" src="images/model_architecture.png" width=800>
 
