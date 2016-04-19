@@ -9,7 +9,8 @@ Brain tumor segmentation seeks to separate healthy tissue from tumorous regions 
 Magnetic Resonance Imaging (MRI) is the most common diagnostic tool brain tumors due primarily to it's noninvasive nature and ability to image diverse tissue types and physiological processes. MRI uses a magnetic gradient and radio frequency pulses to take repetitive axial 'slices' of the brain (Figure 1). Each brain scan produces 155 images.
 
 <img alt="Basic MRI Workflow" src="images/MRI_workflow.png" width=450>
-<img alt="3D rendering produced by T2 MRI scan" src="images/t29_143.gif" width=200>
+<img alt="3D rendering produced by T2 MRI scan" src="images/t29_143.gif" width=250>
+
 <sub> <b> Figure 1: </b> (Left) Basic MRI workflow. Slices are taken axially at 1mm increments, creating the 3-dimensional rendering on the right. </sub>
 
 
