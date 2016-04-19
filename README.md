@@ -7,6 +7,10 @@ Brain tumor segmentation seeks to separate healthy tissue from tumorous regions 
 2. [MRI Background](#mri-background)
     * [Pulse Sequences](#pulse-sequences)
     * [Segmentation](#segmentation)
+3. [High Grade Gliomas](#high-grade-gliomas)
+4. [Convolutional Neural Networks](#convolutional-neural-networks)
+    * [Implementation](#implementation)
+5. [Results](#results)
 
 ## Dataset
 
@@ -15,8 +19,6 @@ All MRI data was provided by the [2015 MICCAI BraTS Challenge](http://www.braint
 <img alt='Ground Truth: Professional Segmentation' src='images/gt.gif' width=200>
 <img alt="Segmentation legend" src='images/color_code.png' width=200>  
 <sub><b>Figure 1: </b> Ground truth segmentation overlay on a T2 weighted scan. </sub>   
-
-
 
 
 ## MRI Background
@@ -41,15 +43,11 @@ Notice now that a single patient will produce upwards of 600 images from a singl
 <img alt="Results of the complete segmentation of a single brain" src='images/segment.png'>  
 <sub> <b>Figure 4:</b> (Top) Representative scans from each tumor imaging sequence. Approximately 600 images need to be analyzed per brain for a segmentation. (Bottom) The results of a complete tumor segmentation.</sub>
 
-## High Grade Gliomas
-
-
-
 Automatic tumor segmentation has the potential to decrease lag time between diagnostic tests and treatment by providing an efficient and standardized report of tumor location in a fraction of the time it would take a radiologist to do so.
 
-High-grade malignant brain tumors are generally associated with a short life expectancy and limited treatment options. The aggressive nature of this illness necessitates efficient diagnosis and treatment planning to improve quality of and extend patient life. Magnetic Resonance Imaging (MRI) is a common technique for assessing brain tumors and determining next steps, but the large quantity of data produced by these scans prohibits precise manual segmentation in a feasible amount of time.
+## High Grade Gliomas
 
-
+High-grade malignant brain tumors are generally associated with a short life expectancy and limited treatment options. The aggressive nature of this illness necessitates efficient diagnosis and treatment planning to improve quality of and extend patient life.
 
 <img alt="Example of tumor segmentation overlay on T2" src="images/segmented_slice.png" width='400'>
 
@@ -57,8 +55,9 @@ There is therefore a need for reliable and automatic segmentation methods in cli
 
 <img alt="Diversity of tumor size, shape and location" src="images/tumor_diversity.png" width='400'>
 
+## Convolutional Neural Networks
 
-### Model
+### Implementation
 
 I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal pre-processing and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions.  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is not consistent in tumor location.
 
