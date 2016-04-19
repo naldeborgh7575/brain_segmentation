@@ -42,18 +42,18 @@ One of the challenges in working with MRI data is dealing with the artifacts pro
 I employed an [n4ITK bias correction](http://www.ncbi.nlm.nih.gov/pubmed/20378467)<sup>[5](#references)</sup> on all T1 and T1C images in the dataset ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/n4_bias_correction.py)), which removed the intensity gradient on each scan. Additional image pre-processing requires standardizing the pixel intensities, since MRI intensities are expressed in arbitrary units and may differ significantly between machines used and scan times.
 
 ### Pulse sequences
-There are multiple radio frequency pulse sequences that can be used to illuminate different types of tissue. For adequate segmentation there are often four different unique sequences acquired: Fluid Attenuated Inversion Recovery (FLAIR), T1, T1-contrasted, and T2 (Figure 3). Each of these pulse sequences exploits the distinct chemical and physiological characteristics of various tissue types, resulting in contrast between the individual classes. Notice the variability in intensities among the four images in Figure 3, all of which are images of the same brain taken with different pulse sequences.
+There are multiple radio frequency pulse sequences that can be used to illuminate different types of tissue. For adequate segmentation there are often four different unique sequences acquired: Fluid Attenuated Inversion Recovery (FLAIR), T1, T1-contrasted, and T2 (Figure 4). Each of these pulse sequences exploits the distinct chemical and physiological characteristics of various tissue types, resulting in contrast between the individual classes. Notice the variability in intensities among the four images in Figure 4, all of which are images of the same brain taken with different pulse sequences.
 
 <img alt="The four MRI sequences used in brain tumor segmentation: Flair, T1, T1-contrasted and T2" src="images/modalities.png" width=200>  
-<sub><b> Figure 3: </b> Flair (top left), T1, T1C and T2 (bottom right) pulse sequences. </sub>
+<sub><b> Figure 4: </b> Flair (top left), T1, T1C and T2 (bottom right) pulse sequences. </sub>
 
 ### Segmentation
-Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four sequences produce 155 slices each (Figure 4). To get a satisfactory manual segmentation a radiologist must spend several hours tediously determining which voxels belong to which class. In the setting of malignant brain tumors, an algorithmic alternative would give clinicians more time focusing on the wellbeing of the patient, allowing for more immediate patient care and higher throughput treatment times.
+Notice now that a single patient will produce upwards of 600 images from a single MRI, given that all four sequences produce 155 slices each (Figure 5). To get a satisfactory manual segmentation a radiologist must spend several hours tediously determining which voxels belong to which class. In the setting of malignant brain tumors, an algorithmic alternative would give clinicians more time focusing on the wellbeing of the patient, allowing for more immediate patient care and higher throughput treatment times.
 
 <img alt="All images produced from a single patient brain scan." src="images/brain_grids.png" width=800>  
 
 <img alt="Results of the complete segmentation of a single brain" src='images/segment.png' width=800>  
-<sub> <b>Figure 4:</b> (Top) Representative scans from each tumor imaging sequence. Approximately 600 images need to be analyzed per brain for a segmentation. (Bottom) The results of a complete tumor segmentation.</sub>
+<sub> <b>Figure 5:</b> (Top) Representative scans from each tumor imaging sequence. Approximately 600 images need to be analyzed per brain for a segmentation. (Bottom) The results of a complete tumor segmentation.</sub>
 
 Automatic tumor segmentation has the potential to decrease lag time between diagnostic tests and treatment by providing an efficient and standardized report of tumor location in a fraction of the time it would take a radiologist to do so.
 
@@ -63,10 +63,10 @@ Automatic tumor segmentation has the potential to decrease lag time between diag
 <b>Median survival</b>: 14.6 months  
 <b>Five-year survival rate</b>: < 10%
 
-High-grade malignant brain tumors are generally associated with a short life expectancy and limited treatment options. The aggressive nature of this illness necessitates efficient diagnosis and treatment planning to improve quality of and extend patient life. This urgency reinforces thee need for reliable and fast automatic segmentation methods in clinical settings. Unfortunately, algorithmic segmentation of these particular tumors has proven to be a very challenging task, due primarily to the fact that they tend to be very structurally and spatially diverse (Figure 5).
+High-grade malignant brain tumors are generally associated with a short life expectancy and limited treatment options. The aggressive nature of this illness necessitates efficient diagnosis and treatment planning to improve quality of and extend patient life. This urgency reinforces thee need for reliable and fast automatic segmentation methods in clinical settings. Unfortunately, algorithmic segmentation of these particular tumors has proven to be a very challenging task, due primarily to the fact that they tend to be very structurally and spatially diverse (Figure 6).
 
 <img alt="Diversity of tumor size, shape and location" src="images/tumor_diversity.png" width='400'>  
-<sub><b>Figure 5: </b> Three different examples of high grade gliomas, tumor segmentations are outlined on the bottom images. Notice the variation in size, shape and location in the brain, a quality of these tumors that makes them difficult to segment. </sub>
+<sub><b>Figure 6: </b> Three different examples of high grade gliomas, tumor segmentations are outlined on the bottom images. Notice the variation in size, shape and location in the brain, a quality of these tumors that makes them difficult to segment. </sub>
 
 ## Convolutional Neural Networks
 
@@ -74,7 +74,7 @@ Convolutional Neural Networks(CNNs) are a powerful tool in the field of image re
 
 ### Model Architecture ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/Segmentation_Models.py))
 
-I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal [pre-processing](#pre-processing) and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions (Figure 6).  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is inconsistent in the case of tumor location.
+I use a four-layer Convolutional Neural Network (CNN) model that that requires minimal [pre-processing](#pre-processing) and can distinguish healthy tissue, actively enhancing tumor and non-advancing tumor regions (Figure 7).  The local invariant nature of CNNs allows for abstraction of token features for classification without relying on large-scale spatial information that is inconsistent in the case of tumor location.
 
 <img alt="Basic ConvNet model architecture" src="images/model_architecture.png" width=600>  
 <sub><b>Figure 6: </b> Basic model architecture of my segmentation model. Input is four 33x33 patches from a randomly selected slice. Each imaging pulse sequence is input as a channel into the net, followed by four convolution/max pooling layers (note- the last convolutional layer is not followed by max pooling). </sub>
@@ -87,15 +87,27 @@ I created the model using Keras and ran it on an Amazon AWS GPU-optimized EC2 in
 The model was trained on randomly selected 33x33 patches of MRI images to classify the center pixel. Each input has 4 channels, one for each imaging sequence, so the net can learn what relative pixel intensities are hallmarks of each given class. The model is trained on approximately 50,000 patches for six epochs. The model generally begins to overfit after six epochs, and the validation accuracy on balanced classes reaches approximately 55 percent. [Future directions](#future-directions) will include more training phases and updated methods for patch selection.
 
 ### Patch Selection ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/patch_library.py))
-The purpose of training the model on patches is to exploit the fact that a class of any given voxel is highly dependent on the class of it's surrounding voxels. Patches give the net access to information about the pixel's local environment, which influences the final prediction of the patch.
+The purpose of training the model on patches (Figure 8) is to exploit the fact that a class of any given voxel is highly dependent on the class of it's surrounding voxels. Patches give the net access to information about the pixel's local environment, which influences the final prediction of the patch.
+
+<img alt="Examples of T1c patches used as input." src="images/patches.png" width=800>  
+<sub><b> Figure 8: </b> Examples of 33 x 33 pixel patches used as input for the neural network. These particular patches were acquired with a T1C pulse sequence, but the actual input includes all pulse sequences. </sub>
 
 Another important factor in patch selection is to make sure the classes of the input data are balanced. Otherwise, the net will be overwhelmed with background images and fail to classify any of the minority classes. Approximately 98% of the data belongs to the background class (healthy tissue or the black surrounding area), with the remaining 2% of pixels divided among the four tumor classes.
 
-I tried out several different methods for sampling patches, which had a large impact on the results. I began randomly selecting patches of a given class from the data and repeating this for all five classes. However, with this sampling method approximately half of the background patches were just the black area with no brain, so the model classified any patch with brain tissue as tumor.
+I tried out several different methods for sampling patches, which had a large impact on the results. I began randomly selecting patches of a given class from the data and repeating this for all five classes. However, with this sampling method approximately half of the background patches were just the zero-intensity area with no brain, so the model classified most patches with brain tissue as tumor, and only the black areas as background (Figure 9).
 
- 
+<sub><b> Figure 9: </b> Results of segmentation without excluding exclusively zero-intensity patches. Notice that even healthy tissue is classified as tumor. </sub>
+
+I then restricted the selection process to exclude patches in which more than 25% of the pixels were of zero-intensity. This greatly improved the results, one of which can be seen in Figure 10.
+
+<sub><b> Figure 10: </b> Results of segmentation after restricting the amount of zero-intensity pixels allowed in a given patch. The tumor prediction is now restricted mostly to the actual area of the lesion, as opposed to in Figure 10. </sub>
+
+Unfortunately the model still struggles with class boundary segmentation. The boundaries in my results are quite smooth, while the ground truth tends to have more detail. This is a downside to working with patch-based prediction, since the predicted identity of boundary pixels is influenced by neighbors of a different class. A method I've played to fix this involves selecting a certain subset of the training data from the highest entropy patches in the ground truth segmentation. High entropy patches have more classes represented in them, so the model will have more boundary examples to learn from. I am still fine tuning this process and will be updating the results accordingly.
+
 
 ### Results
+
+Below is a summary of how well the current model is predicting. As more advances are made this section will be updated
 
 <img alt="Result Frame" src="images/results.png" width=404>
 
