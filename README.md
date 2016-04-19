@@ -39,7 +39,7 @@ One of the challenges in working with MRI data is dealing with the artifacts pro
 <img alt="Bias correction before and after" src="images/n4_correction.png" width=200>  
 <sub><b>Figure 3:</b> Brain scans before and after n4ITK bias correction. Notice the higher intensity at the bottom of the image on the right. This can be a source of false positives in a computer segmentation. </sub>  
 
-I employed an [n4ITK bias correction](http://www.ncbi.nlm.nih.gov/pubmed/20378467)<sup>[5](#references)</sup> on all T1 and T1C images in the dataset ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/n4_bias_correction.py)), which removed the intensity gradient on each scan. Additional image pre-processing requires standardizing the pixel intensities, since MRI intensities are expressed in arbitrary units and may differ significantly between machines used and scan times.
+I employed an [n4ITK bias correction](http://www.ncbi.nlm.nih.gov/pubmed/20378467) on all T1 and T1C images in the dataset ([code](https://github.com/naldeborgh7575/brain_segmentation/blob/master/n4_bias_correction.py)), which removed the intensity gradient on each scan. Additional image pre-processing requires standardizing the pixel intensities, since MRI intensities are expressed in arbitrary units and may differ significantly between machines used and scan times.
 
 ### Pulse sequences
 There are multiple radio frequency pulse sequences that can be used to illuminate different types of tissue. For adequate segmentation there are often four different unique sequences acquired: Fluid Attenuated Inversion Recovery (FLAIR), T1, T1-contrasted, and T2 (Figure 4). Each of these pulse sequences exploits the distinct chemical and physiological characteristics of various tissue types, resulting in contrast between the individual classes. Notice the variability in intensities among the four images in Figure 4, all of which are images of the same brain taken with different pulse sequences.
@@ -107,12 +107,12 @@ Unfortunately the model still struggles with class boundary segmentation. The bo
 
 ### Results
 
-Below is a summary of how well the current model is predicting. As more advances are made this section will be updated
+Below is a summary of how well the current model is predicting. As more advances are made this section will be updated. A representative example of a tumor segmentation on test data is displayed in Figure 11. The model can identify each of the four classes with a good amount of accuracy, with the exception of class boundaries, which are smoother in my prediction than the ground truth.
 
-<img alt="Result Frame" src="images/results.png" width=404>
-
+<img alt="Result Frame" src="images/results.png" width=403>
 <img alt='Ground Truth: Professional Segmentation' src='images/gt.gif' width=200>
-<img alt='Results of CNN Model' src='images/my_res.gif' width=200>
+<img alt='Results of CNN Model' src='images/my_res.gif' width=200>  
+<sub><b> Figure 11: </b> Results of CNN model segmentation on a single slice (top) with respect to the ground truth, and a 3D representation of the segmentation (bottom). </sub>
 
 ## Future Directions
 
