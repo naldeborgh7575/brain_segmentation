@@ -202,7 +202,6 @@ class SegmentationModel(object):
         else:
             self.model_comp.fit(X_train, Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
 
-
     def save_model(self, model_name):
         '''
         INPUT string 'model_name': name to save model and weigths under, including filepath but not extension
