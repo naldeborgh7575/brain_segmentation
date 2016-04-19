@@ -175,7 +175,7 @@ class SegmentationModel(object):
         print 'Done.'
         return model_comp
 
-    def fit_model(self, X_train, y_train, X5_train = None):
+    def fit_model(self, X_train, y_train, X5_train = None, save=True):
         '''
         INPUT   (1) numpy array 'X_train': list of patches to train on in form (n_sample, n_channel, h, w)
                 (2) numpy vector 'y_train': list of labels corresponding to X_train patches in form (n_sample,)
@@ -201,6 +201,7 @@ class SegmentationModel(object):
             self.model_comp.fit(data, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
         else:
             self.model_comp.fit(X_train, Y_train, batch_size=self.batch_size, nb_epoch=self.n_epoch, validation_split=0.1, show_accuracy=True, verbose=1, callbacks=[checkpointer])
+ 
 
     def save_model(self, model_name):
         '''
