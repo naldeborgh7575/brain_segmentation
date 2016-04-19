@@ -10,18 +10,11 @@ Brain tumor segmentation seeks to separate healthy tissue from tumorous regions 
 
 ## Dataset
 
-All MRI data was provided by the [2015 MICCAI BraTS Challenge](http://www.braintumorsegmentation.org), which consists of approximately 300 high-grade glioma cases. Each dataset contains four different MRI [pulse sequences](http://radiopaedia.org/articles/mri-sequences-overview), each of which is comprised of 155 brain slices, for a total of 620 images per patient.
+All MRI data was provided by the [2015 MICCAI BraTS Challenge](http://www.braintumorsegmentation.org), which consists of approximately 300 high-grade glioma cases. Each dataset contains four different MRI [pulse sequences](http://radiopaedia.org/articles/mri-sequences-overview), each of which is comprised of 155 brain slices, for a total of 620 images per patient. Professional segmentation is provided as ground truth labels for each case. Figure 1 is an example of a scan with the ground truth segmentation. The segmentation labels are represented as follows:
 
-<img alt='Ground Truth: Professional Segmentation' src='images/gt.gif' width=200>  
-<sub><b>Figure 1: </b> Ground truth segmentation overlay on a T2 weighted scan. </sub>  
-
-Professional segmentation is provided as ground truth labels for each case. Figure 1 is an example of a scan with the ground truth segmentation. The segmentation labels are represented as follows:
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="images/green.png" width=15> &nbsp; Edema (Swelling)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="images/yellow.png" width=15> &nbsp; Enhancing Tumor  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="images/blue.png" width=15> &nbsp; Non-Enhancing Tumor  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="images/red.png" width=15> &nbsp; Necrotic Core  
-
+<img alt='Ground Truth: Professional Segmentation' src='images/gt.gif' width=200>
+<img alt="Segmentation legend" src='images/color_code.png' width=200>  
+<sub><b>Figure 1: </b> Ground truth segmentation overlay on a T2 weighted scan. </sub>   
 
 
 
