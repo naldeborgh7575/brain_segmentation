@@ -96,9 +96,11 @@ Another important factor in patch selection is to make sure the classes of the i
 
 I tried out several different methods for sampling patches, which had a large impact on the results. I began randomly selecting patches of a given class from the data and repeating this for all five classes. However, with this sampling method approximately half of the background patches were just the zero-intensity area with no brain, so the model classified most patches with brain tissue as tumor, and only the black areas as background (Figure 9).
 
+<img alt='Results of initial segmentation' src='images/bad_example.png' width=150>  
 <sub><b> Figure 9: </b> Results of segmentation without excluding exclusively zero-intensity patches. Notice that even healthy tissue is classified as tumor. </sub>
 
 I then restricted the selection process to exclude patches in which more than 25% of the pixels were of zero-intensity. This greatly improved the results, one of which can be seen in Figure 10.
+
 
 <sub><b> Figure 10: </b> Results of segmentation after restricting the amount of zero-intensity pixels allowed in a given patch. The tumor prediction is now restricted mostly to the actual area of the lesion, as opposed to in Figure 10. </sub>
 
