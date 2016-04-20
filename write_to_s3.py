@@ -1,4 +1,3 @@
-# import sys
 import time
 import os
 import progressbar
@@ -16,9 +15,6 @@ def files_to_s3(files, bucket_name):
     AWS_KEY = os.environ['AWS_ACCESS_KEY_ID']
     AWS_SECRET = os.environ['AWS_SECRET_ACCESS_KEY']
 
-    # def percent_cb(complete, total):
-    #     sys.stdout.write('.')
-    #     sys.stdout.flush()
 
     def upload(myfile):
         conn = S3Connection(aws_access_key_id = AWS_KEY, aws_secret_access_key = AWS_SECRET)
