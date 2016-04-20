@@ -16,6 +16,12 @@ np.random.seed(5)
 
 class PatchLibrary(object):
     def __init__(self, patch_size, train_data, num_samples):
+        '''
+        class for creating patches and subpatches from training data to use as input for segmentation models.
+        INPUT   (1) tuple 'patch_size': size (in voxels) of patches to extract. Use (33,33) for sequential model
+                (2) list 'train_data': list of filepaths to all training data saved as pngs. images should have shape (5*240,240)
+                (3) int 'num_samples': the number of patches to collect from training data.
+        '''
         self.patch_size = patch_size
         self.num_samples = num_samples
         self.train_data = train_data
