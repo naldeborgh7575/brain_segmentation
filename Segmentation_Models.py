@@ -210,7 +210,7 @@ class SegmentationModel(object):
         Saves current model as json and weigts as h5df file
         '''
         model = '{}.json'.format(model_name)
-        weights = '{}.hdf5'.formate(model_name)
+        weights = '{}.hdf5'.format(model_name)
         json_string = self.model_comp.to_json()
         self.model_comp.save_weights(weights)
         with open(model, 'w') as f:
