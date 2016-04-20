@@ -96,25 +96,23 @@ Another important factor in patch selection is to make sure the classes of the i
 
 I tried out several different methods for sampling patches, which had a large impact on the results. I began randomly selecting patches of a given class from the data and repeating this for all five classes. However, with this sampling method approximately half of the background patches were just the zero-intensity area with no brain, so the model classified most patches with brain tissue as tumor, and only the black areas as background (Figure 9).
 
-<img alt='Results of initial segmentation' src='images/bad_example.png' width=150>  
-<sub><b> Figure 9: </b> Results of segmentation without excluding exclusively zero-intensity patches. Notice that even healthy tissue is classified as tumor. </sub>
+<img alt='Results of initial segmentation' src='images/bad_example.png' height=200>
+<img alt="Improved segmentation results after restricting the amount of " src="images/improved_seg.png" height=200>  
+<sub><b> Figure 9: </b> (Left) results of segmentation without excluding exclusively zero-intensity patches. Notice that even healthy tissue is classified as tumor. (Right) results of segmentation after restricting the amount of zero-intensity pixels allowed in a given patch. The tumor prediction is now restricted mostly to the actual area of the lesion </sub>  
 
-I then restricted the selection process to exclude patches in which more than 25% of the pixels were of zero-intensity. This greatly improved the results, one of which can be seen in Figure 10.
-
-
-<sub><b> Figure 10: </b> Results of segmentation after restricting the amount of zero-intensity pixels allowed in a given patch. The tumor prediction is now restricted mostly to the actual area of the lesion, as opposed to in Figure 10. </sub>
+I then restricted the selection process to exclude patches in which more than 25% of the pixels were of zero-intensity. This greatly improved the results, one of which can be seen on the right in Figure 9.
 
 Unfortunately the model still struggles with class boundary segmentation. The boundaries in my results are quite smooth, while the ground truth tends to have more detail. This is a downside to working with patch-based prediction, since the predicted identity of boundary pixels is influenced by neighbors of a different class. A method I've played to fix this involves selecting a certain subset of the training data from the highest entropy patches in the ground truth segmentation. High entropy patches have more classes represented in them, so the model will have more boundary examples to learn from. I am still fine tuning this process and will be updating the results accordingly.
 
 
 ### Results
 
-Below is a summary of how well the current model is predicting. As more advances are made this section will be updated. A representative example of a tumor segmentation on test data is displayed in Figure 11. The model can identify each of the four classes with a good amount of accuracy, with the exception of class boundaries, which are smoother in my prediction than the ground truth.
+Below is a summary of how well the current model is predicting. As more advances are made this section will be updated. A representative example of a tumor segmentation on test data is displayed in Figure 10. The model can identify each of the four classes with a good amount of accuracy, with the exception of class boundaries, which are smoother in my prediction than the ground truth.
 
 <img alt="Result Frame" src="images/results.png" width=404>  
 <img alt='Ground Truth: Professional Segmentation' src='images/gt.gif' width=200>
 <img alt='Results of CNN Model' src='images/my_res.gif' width=200>  
-<sub><b> Figure 11: </b> Results of CNN model segmentation on a single slice (top) with respect to the ground truth, and a 3D representation of the segmentation (bottom). </sub>
+<sub><b> Figure 10: </b> Results of CNN model segmentation on a single slice (top) with respect to the ground truth, and a 3D representation of the segmentation (bottom). </sub>
 
 Notice that towards the top of the 3-dimensional network results representation some of the cerebrospinal fluid (CSF) is incorrectly classified as tumor. This is unsurprising, considering that the CSF has similar features to parts of the tumor in some pulse sequences. There are several potential solutions for this:
 
