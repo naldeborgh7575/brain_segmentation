@@ -22,6 +22,7 @@ from keras.utils import np_utils
 class SegmentationModel(object):
     def __init__(self, n_epoch=10, n_chan=4, batch_size=128, loaded_model=False, architecture='single', w_reg=0.01, n_filters=[64,128,128,128], k_dims = [7,5,5,3], activation = 'relu'):
         '''
+        A class for compiling/loading, fitting and saving various models, viewing segmented images and analyzing results
         INPUT   (1) int 'n_epoch': number of eopchs to train on. defaults to 10
                 (2) int 'n_chan': number of channels being assessed. defaults to 4
                 (3) int 'batch_size': number of images to train on for each batch. defaults to 128
