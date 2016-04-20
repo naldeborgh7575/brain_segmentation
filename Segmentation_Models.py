@@ -2,6 +2,7 @@ import numpy as np
 import random
 import json
 import h5py
+from patch_library import PatchLibrary
 from glob import glob
 import matplotlib.pyplot as plt
 from skimage import io, color, img_as_float
@@ -294,7 +295,14 @@ class SegmentationModel(object):
             return sliced_image
 
 if __name__ == '__main__':
+    train_data = glob('train_data/**')
+    patches = PatchLibrary((33,33), train_data, 50000)
+    X,y = patches.make_training_patches()
+
     model = SegmentationModel()
+    model.fit_model(X, y)
+    model.save_model('models/example')
+
     # tests = glob('test_data/2_*')
     # test_sort = sorted(tests, key= lambda x: int(x[12:-4]))
     # model = BasicModel(loaded_model=True)
