@@ -144,8 +144,9 @@ class PatchLibrary(object):
         if balanced_classes:
             per_class = self.num_samples / len(classes)
             patches, labels = [], []
-            for i in classes:
-                p, l = self.find_patches(i, per_class)
+            progress.currval = 0
+            for i in progress(xrange(len(classes))):
+                p, l = self.find_patches(classes[i], per_class)
                 # set 0 <= pix intensity <= 1
                 for img_ix in xrange(len(p)):
                     for slice in xrange(len(p[img_ix])):
