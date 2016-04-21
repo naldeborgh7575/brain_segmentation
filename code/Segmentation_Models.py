@@ -218,6 +218,7 @@ class SegmentationModel(object):
 
     def class_report(self, X_test, y_test):
         '''
+        returns skilearns test report (precision, recall, f1-score)
         INPUT   (1) list 'X_test': test data of 4x33x33 patches
                 (2) list 'y_test': labels for X_test
         OUTPUT  (1) confusion matrix of precision, recall and f1 score
@@ -226,6 +227,13 @@ class SegmentationModel(object):
         print classification_report(y_pred, y_test)
 
     def predict_image(self, test_img, show=False):
+        '''
+        predicts classes of input image
+        INPUT   (1) str 'test_image': filepath to image to predict on
+                (2) bool 'show': True to show the results of prediction, False to return prediction
+        OUTPUT  (1) if show == False: array of predicted pixel classes for the center 208 x 208 pixels
+                (2) if show == True: displays segmentation results
+        '''
         imgs = io.imread(test_img).astype('float').reshape(5,240,240)
         plist = []
 
@@ -293,6 +301,74 @@ class SegmentationModel(object):
 
         else:
             return sliced_image
+
+    def get_dice_coef(self, test_img, label):
+        '''
+        Calculate dice coefficient for total slice, tumor-associated slice, advancing tumor and core tumor
+        INPUT   (1) str 'test_img': filepath to slice to predict on
+                (2) str 'label': filepath to ground truth label for test_img
+        OUTPUT: Summary of dice scores for the following classes:
+                    - all classes
+                    - all classes excluding background (ground truth and segmentation)
+                    - all classes excluding background (only ground truth-based)
+                    - advancing tumor
+                    - core tumor (1,3 and 4)
+        '''
+        segmentation = self.predict_image(test_img)
+        seg_full = np.pad(segmentation, (16,16), mode='edge')
+        gt = io.imread(label).astype(int)
+        # dice coef of total image
+        total = (len(np.argwhere(seg_full == gt)) * 2.) / (2 * 240 * 240)
+
+        def unique_rows(a):
+            '''
+            helper function to get unique rows from 2D numpy array
+            '''
+            a = np.ascontiguousarray(a)
+            unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
+            return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
+
+        # dice coef of entire non-background image
+        gt_tumor = np.argwhere(gt != 0)
+        seg_tumor = np.argwhere(seg_full != 0)
+        combo = np.append(pred_core, core, axis = 0)
+        core_edema = unique_rows(combo) # intersection of locations defined as tumor_assoc in gt and segmentation
+        gt_c, seg_c = [], [] # predicted class of each
+        for i in core_edema:
+            gt_c.append(gt[i[0]][i[1]])
+            seg_c.append(seg_full[i[0]][i[1]])
+        tumor_assoc = len(np.argwhere(np.array(gt_c) == np.array(seg_c))) / float(len(core))
+        tumor_assoc_gt = len(np.argwhere(np.array(gt_c) == np.array(seg_c))) / float(len(gt_tumor))
+
+        # dice coef advancing tumor
+        adv_gt = np.argwhere(gt == 4)
+        gt_a, seg_a = [], [] # classification of
+        for i in adv_gt:
+            gt_a.append(gt[i[0]][i[1]])
+            seg_a.append(fp[i[0]][i[1]])
+        gta = np.array(gt_a)
+        sega = np.array(seg_a)
+        adv = float(len(np.argwhere(gta == sega))) / len(adv_gt)
+
+        # dice coef core tumor
+        noadv_gt = np.argwhere(gt == 3)
+        necrosis_gt = np.argwhere(gt == 1)
+        live_tumor_gt = np.append(adv_gt, noadv_gt, axis = 0)
+        core_gt = np.append(live_tumor_gt, necrosis_gt, axis = 0)
+        gt_core, seg_core = [],[]
+        for i in core_gt:
+            gt_core.append(gt[i[0]][i[1]])
+            seg_core.append(seg_full[i[0]][i[1]])
+        gtcore, segcore = np.array(gt_core), np.array(seg_core)
+        core = len(np.argwhere(gtcore == segcore)) / float(len(core_gt))
+        
+        print ' '
+        print 'Region_______________________| Dice Coefficient'
+        print 'Total Slice__________________| {0:.2f}'.format(total)
+        print 'No Background gt_____________| {0:.2f}'.format(tumor_assoc_gt)
+        print 'No Background both___________| {0:.2f}'.format(tumor_assoc)
+        print 'Advancing Tumor______________| {0:.2f}'.format(adv)
+        print 'Core Tumor___________________| {0:.2f}'.format(core)
 
 if __name__ == '__main__':
     train_data = glob('train_data/**')
