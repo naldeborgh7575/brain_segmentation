@@ -50,7 +50,6 @@ class BrainPipeline(object):
         elif self.n4itk:
             scans = [flair[0], t1_n4[0], t1_n4[1], t2[0], gt[0]]
         for scan_idx in xrange(5):
-            # import pdb; pdb.set_trace()
             # read each image directory, save to self.slices
             slices_by_mode[scan_idx] = io.imread(scans[scan_idx], plugin='simpleitk').astype(float)
         for mode_ix in xrange(slices_by_mode.shape[0]): # modes 1 thru 5
@@ -90,7 +89,7 @@ class BrainPipeline(object):
     def save_patient(self, reg_norm_n4, patient_num):
         '''
         INPUT:  (1) int 'patient_num': unique identifier for each patient
-                (2) string 'reg_or_norm': 'reg' for original images, 'norm' normalized images, 'n4' for n4 normalized images
+                (2) string 'reg_norm_n4': 'reg' for original images, 'norm' normalized images, 'n4' for n4 normalized images
         OUTPUT: saves png in Norm_PNG directory for normed, Training_PNG for reg
         '''
         print 'Saving scans for patient {}...'.format(patient_num)
@@ -168,5 +167,3 @@ if __name__ == '__main__':
     # save_patient_slices(patients, 'norm')
     # save_patient_slices(patients, 'n4')
     # s3_dump('Graveyard/Training_PNG/', 'orig-training-png')
-    # TO DO
-    # make generator to train net in batches (~32)
