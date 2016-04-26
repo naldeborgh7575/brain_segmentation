@@ -163,7 +163,7 @@ class PatchLibrary(object):
             return np.array(patches).reshape(self.num_samples, 4, self.h, self.w), np.array(labels).reshape(self.num_samples)
 
         else:
-            print "Use balanced classes. Don't feel like making random classes method yet."
+            print "Use balanced classes, random won't work."
 
 
 
