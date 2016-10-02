@@ -46,7 +46,7 @@ class BrainPipeline(object):
             print '-> Applyling bias correction...'
             for t1_path in t1:
                 self.n4itk_norm(t1_path) # normalize files
-                scans = [flair[0], t1_n4[0], t1_n4[1], t2[0], gt[0]]
+            scans = [flair[0], t1_n4[0], t1_n4[1], t2[0], gt[0]]
         elif self.n4itk:
             scans = [flair[0], t1_n4[0], t1_n4[1], t2[0], gt[0]]
         for scan_idx in xrange(5):
