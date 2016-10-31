@@ -128,6 +128,8 @@ While my model yields promising results, an application such as this leaves no r
 
 When I began building the model I built an architecture based on one built by [Havaei et al](http://arxiv.org/pdf/1505.03540.pdf), which uses a cascaded, two-pathway architecture and looks at both local and global features of patches. I elected to use the simpler model to meet the two-week deadline for this project, but in the future I will work on tuning models similar to this to improve upon the accuracy of this model.
 
+This project is not currently active and pull requests will not be monitored.
+
 ## References
 
     1. Havaei, M. et. al, Brain Tumor Segmentation with Deep Neural Networks. arXiv preprint arXiv:1505.03540, 2015.
