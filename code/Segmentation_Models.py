@@ -361,7 +361,7 @@ class SegmentationModel(object):
             seg_core.append(seg_full[i[0]][i[1]])
         gtcore, segcore = np.array(gt_core), np.array(seg_core)
         core = len(np.argwhere(gtcore == segcore)) / float(len(core_gt))
-        
+
         print ' '
         print 'Region_______________________| Dice Coefficient'
         print 'Total Slice__________________| {0:.2f}'.format(total)
