@@ -1,5 +1,7 @@
 # Automatic Brain Tumor Segmentation
 
+Note: This project is not currently active. It is likely outdated and buggy. I unfortunately do not have the time to update it or keep up with pull requests. 
+
 Brain tumor segmentation seeks to separate healthy tissue from tumorous regions such as the advancing tumor, necrotic core and surrounding edema. This is an essential step in diagnosis and treatment planning, both of which need to take place quickly in the case of a malignancy in order to maximize the likelihood of successful treatment. Due to the slow and tedious nature of manual segmentation, there is a high demand for computer algorithms that can do this quickly and accurately.
 
 ## Table of Contents
@@ -127,8 +129,6 @@ Notice that towards the top of the 3-dimensional network results representation 
 While my model yields promising results, an application such as this leaves no room for errors or false positives. In a surgical setting it is essential to remove as much of the tumor mass as possible without damaging any surrounding healthy tissue. There are countless ways to improve this model, ranging from the overall architecture, to adjusting how we sample the data.
 
 When I began building the model I built an architecture based on one built by [Havaei et al](http://arxiv.org/pdf/1505.03540.pdf), which uses a cascaded, two-pathway architecture and looks at both local and global features of patches. I elected to use the simpler model to meet the two-week deadline for this project, but in the future I will work on tuning models similar to this to improve upon the accuracy of this model.
-
-This project is not currently active and pull requests will not be monitored.
 
 ## References
 
